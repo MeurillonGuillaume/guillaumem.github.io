@@ -49,7 +49,7 @@
     <!-- APP SELECTOR -->
     <div class="app-selectors">
       <div class="app-sel app-sel-fm on" onclick="toggleApp(this)" data-app="fm">
-        <span class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister
+        <span class="app-dot" style="background:#007FE8;"></span> Flitsmeister
       </div>
       <div class="app-sel app-sel-waze on" onclick="toggleApp(this)" data-app="waze">
         <span class="app-dot" style="background:#1a944a;"></span> Waze
@@ -68,23 +68,23 @@
     <div class="metrics-row">
       <div class="metric-card">
         <div class="metric-label">Reviews geanalyseerd</div>
-        <div class="metric-val" id="m-reviews">24.817</div>
-        <div class="metric-sub">3 apps · 2 platforms</div>
+        <div class="metric-val" id="m-reviews">6.077</div>
+        <div class="metric-sub">4 apps · 4.496 aspect-vermeldingen</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">FM gemiddelde score</div>
-        <div class="metric-val" style="color:#15803d;" id="m-score">4,6 ↑</div>
-        <div class="metric-sub up">+0,2 vs. vorige periode</div>
+        <div class="metric-label">FM net sentiment</div>
+        <div class="metric-val" style="color:#dc2626;" id="m-score">−0,18</div>
+        <div class="metric-sub down">vs −0,04 concurrentgemiddelde</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Killer gaps gevonden</div>
-        <div class="metric-val" style="color:#dc2626;" id="m-killers">4</div>
-        <div class="metric-sub down">concurrent heeft, FM niet</div>
+        <div class="metric-label">Pijnpunten</div>
+        <div class="metric-val" style="color:#dc2626;" id="m-killers">5</div>
+        <div class="metric-sub down">negatief & veel besproken</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Competitor WTP</div>
-        <div class="metric-val" id="m-wtp">42%</div>
-        <div class="metric-sub">gemiddelde betalingsbereidheid</div>
+        <div class="metric-label">Achterstand op concurrent</div>
+        <div class="metric-val" id="m-wtp">15</div>
+        <div class="metric-sub">features met negatieve perceptiekloof</div>
       </div>
     </div>
 
@@ -100,7 +100,7 @@
             <div class="card-title-left"><i class="ti ti-chart-scatter"></i> Leader-Filler-Killer matrix</div>
             <div style="display:flex;gap:10px;align-items:center;">
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span
-                  style="width:10px;height:10px;border-radius:50%;background:#1a6ef5;display:inline-block;"></span> FM
+                  style="width:10px;height:10px;border-radius:50%;background:#007FE8;display:inline-block;"></span> FM
                 feature</div>
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span
                   style="width:10px;height:10px;border-radius:50%;background:#e5e7eb;border:1.5px solid #9ca3af;display:inline-block;"></span>
@@ -248,8 +248,8 @@
       <div
         style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sent-app-toggles">
-          <button class="sent-app-btn on" data-app="fm" style="--ac:#1a6ef5;" onclick="toggleSentApp(this)"><span
-              class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister</button>
+          <button class="sent-app-btn on" data-app="fm" style="--ac:#007FE8;" onclick="toggleSentApp(this)"><span
+              class="app-dot" style="background:#007FE8;"></span> Flitsmeister</button>
           <button class="sent-app-btn on" data-app="waze" style="--ac:#1a944a;" onclick="toggleSentApp(this)"><span
               class="app-dot" style="background:#1a944a;"></span> Waze</button>
           <button class="sent-app-btn on" data-app="gm" style="--ac:#d85a30;" onclick="toggleSentApp(this)"><span
@@ -344,159 +344,171 @@
 
   </div>
 
-  <div class="footer">Flitsmeister App Store Intelligence · Demo · Gebaseerd op 24.817 reviews van iOS App Store en
-    Google Play · Laatste sync: vandaag</div>
+  <div class="footer">Flitsmeister App Store Intelligence · Demo · Gebaseerd op 6.077 reviews (4.496
+    aspect-vermeldingen) van Flitsmeister, Waze, Google Maps en TomTom GO · Laatste sync: vandaag</div>
 
   <div class="chart-tooltip" id="chartTooltip"></div>
 
   <script>
+    // Bron: gap_report.md — 4496 aspect-vermeldingen, 6077 reviews (FM/Waze/Google Maps/TomTom).
+    // x = FM-sentiment (polariteit, negatief→positief), y = FM-aandeel in reviews (laag→hoog).
+    // zone-mapping rapport→matrix: OK/strength→leader, WEAK→filler, PAIN→killer, MISSING→addon.
+    // bars: FM vs concurrentgemiddelde (rapport heeft geen losse opsplitsing per app).
     const FEATURES = [
       {
-        id: 1, name: 'Mobiele flitspalen', x: 35, y: 88, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.8/5', mentions: '1.243', sentiment: '92% positief',
-        bars: [{ app: 'Flitsmeister', v: 96, c: '#1a6ef5' }, { app: 'Waze', v: 82, c: '#1a944a' }, { app: 'Google Maps', v: 41, c: '#d85a30' }],
-        quote: '"De flitspaal-alerts zijn altijd spot-on. Ik vertrouw Flitsmeister meer dan welke andere app ook."'
+        id: 1, name: 'Flitspaalwaarschuwingen', x: 37, y: 70, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,13', mentions: '253', sentiment: '−0,13 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 37, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 60, c: '#9ca3af' }],
+        quote: 'Kernfeature, maar FM −0,13 vs concurrent +0,10 — perceptiekloof +0,23.'
       },
       {
-        id: 2, name: 'Vaste flitspalen', x: 40, y: 92, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.7/5', mentions: '987', sentiment: '89% positief',
-        bars: [{ app: 'Flitsmeister', v: 94, c: '#1a6ef5' }, { app: 'Waze', v: 80, c: '#1a944a' }, { app: 'Google Maps', v: 38, c: '#d85a30' }],
-        quote: '"Vaste flitsers altijd correct. Al 3 jaar geen boete meer dankzij deze app."'
+        id: 2, name: 'Betalen & PRO', x: 28, y: 79, zone: 'filler', fm: true, pro: true,
+        fmscore: '−0,22', mentions: '287', sentiment: '−0,22 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 28, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 58, c: '#9ca3af' }],
+        quote: 'Meest besproken feature (287×). FM −0,22 vs concurrent +0,08. Grootste pijn rond prijs/PRO.'
       },
       {
-        id: 3, name: 'Trajectcontrole', x: 38, y: 78, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.6/5', mentions: '654', sentiment: '85% positief',
-        bars: [{ app: 'Flitsmeister', v: 91, c: '#1a6ef5' }, { app: 'Waze', v: 55, c: '#1a944a' }, { app: 'Google Maps', v: 20, c: '#d85a30' }],
-        quote: '"Trajectcontrole werkt perfect, altijd op tijd gewaarschuwd."'
+        id: 3, name: 'Updates & wijzigingen', x: 12, y: 45, zone: 'killer', fm: true, pro: false,
+        fmscore: '−0,38', mentions: '155', sentiment: '−0,38 (zeer negatief)',
+        bars: [{ app: 'Flitsmeister', v: 12, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 10, c: '#9ca3af' }],
+        quote: 'Pijnpunt; concurrent even laag (−0,40). Sectorbrede klacht over wijzigingen.'
       },
       {
-        id: 4, name: 'Gem. snelheidcheck', x: 60, y: 80, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.5/5', mentions: '431', sentiment: '81% positief',
-        bars: [{ app: 'Flitsmeister', v: 89, c: '#1a6ef5' }, { app: 'Waze', v: 60, c: '#1a944a' }, { app: 'Google Maps', v: 30, c: '#d85a30' }],
-        quote: '"Gemiddelde snelheidscontroles goed gemarkeerd, handig op de snelweg."'
+        id: 4, name: 'Routebepaling', x: 38, y: 34, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,12', mentions: '116', sentiment: '−0,12 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 38, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 59, c: '#9ca3af' }],
+        quote: 'Concurrent praat er veel meer over (aandeelkloof +0,10) én positiever (+0,09).'
       },
       {
-        id: 5, name: 'Snelheidsmeter', x: 48, y: 75, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.4/5', mentions: '389', sentiment: '78% positief',
-        bars: [{ app: 'Flitsmeister', v: 85, c: '#1a6ef5' }, { app: 'Waze', v: 70, c: '#1a944a' }, { app: 'Google Maps', v: 65, c: '#d85a30' }],
-        quote: '"De snelheidsmeter is nauwkeuriger dan mijn eigen dashboard."'
+        id: 5, name: 'Interface & bediening', x: 36, y: 32, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,14', mentions: '108', sentiment: '−0,14 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 36, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 67, c: '#9ca3af' }],
+        quote: 'Perceptiekloof +0,31 — concurrent +0,17 vs FM −0,14.'
       },
       {
-        id: 6, name: 'Veiligheidswaarschuwingen', x: 58, y: 72, zone: 'leader', fm: true, pro: false,
-        fmscore: '4.3/5', mentions: '312', sentiment: '76% positief',
-        bars: [{ app: 'Flitsmeister', v: 83, c: '#1a6ef5' }, { app: 'Waze', v: 75, c: '#1a944a' }, { app: 'Google Maps', v: 55, c: '#d85a30' }],
-        quote: '"Ik word altijd op tijd gewaarschuwd voor gevaarlijke situaties."'
+        id: 6, name: 'Stabiliteit & prestaties', x: 4, y: 23, zone: 'killer', fm: true, pro: false,
+        fmscore: '−0,50', mentions: '74', sentiment: '−0,50 (zeer negatief)',
+        bars: [{ app: 'Flitsmeister', v: 4, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 3, c: '#9ca3af' }],
+        quote: 'Slechtste sentiment van alle features. Sectorbreed pijnpunt (concurrent −0,56).'
       },
       {
-        id: 7, name: 'Automatisch opstarten', x: 25, y: 58, zone: 'filler', fm: true, pro: false,
-        fmscore: '3.8/5', mentions: '198', sentiment: '62% positief',
-        bars: [{ app: 'Flitsmeister', v: 72, c: '#1a6ef5' }, { app: 'Waze', v: 68, c: '#1a944a' }, { app: 'Google Maps', v: 60, c: '#d85a30' }],
-        quote: '"Handig dat de app automatisch start, maar soms iets te snel."'
+        id: 7, name: 'GPS-nauwkeurigheid', x: 45, y: 21, zone: 'leader', fm: true, pro: false,
+        fmscore: '−0,05', mentions: '66', sentiment: '−0,05 (neutraal)',
+        bars: [{ app: 'Flitsmeister', v: 45, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 59, c: '#9ca3af' }],
+        quote: 'Bijna neutraal voor FM, maar concurrent +0,09 — lichte achterstand.'
       },
       {
-        id: 8, name: 'Reclamevrij (PRO)', x: 82, y: 62, zone: 'leader', fm: false, pro: true,
-        fmscore: '4.7/5', mentions: '892', sentiment: '88% positief',
-        bars: [{ app: 'Flitsmeister PRO', v: 95, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 0, c: '#d85a30' }],
-        quote: '"PRO is het waard alleen al voor de reclamevrije ervaring tijdens het rijden."'
+        id: 8, name: 'Gevaarwaarschuwingen', x: 58, y: 19, zone: 'leader', fm: true, pro: false,
+        fmscore: '+0,08', mentions: '56', sentiment: '+0,08 (positief)',
+        bars: [{ app: 'Flitsmeister', v: 58, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 51, c: '#9ca3af' }],
+        quote: 'Enige duidelijk positieve FM-feature; FM verslaat hier het concurrentgemiddelde.'
       },
       {
-        id: 9, name: 'CarPlay / Android Auto', x: 42, y: 55, zone: 'filler', fm: true, pro: false,
-        fmscore: '4.0/5', mentions: '445', sentiment: '70% positief',
-        bars: [{ app: 'Flitsmeister', v: 78, c: '#1a6ef5' }, { app: 'Waze', v: 82, c: '#1a944a' }, { app: 'Google Maps', v: 88, c: '#d85a30' }],
-        quote: '"CarPlay werkt goed maar soms crasht de verbinding — stabiliteitstupdate nodig."'
+        id: 9, name: 'Android Auto / CarPlay', x: 30, y: 18, zone: 'killer', fm: true, pro: false,
+        fmscore: '−0,20', mentions: '55', sentiment: '−0,20 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 30, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 38, c: '#9ca3af' }],
+        quote: 'Negatief; concurrent doet het iets beter (−0,12).'
       },
       {
-        id: 12, name: 'Navigatie', x: 28, y: 42, zone: 'filler', fm: true, pro: false,
-        fmscore: '4.1/5', mentions: '1.102', sentiment: '74% positief',
-        bars: [{ app: 'Flitsmeister', v: 80, c: '#1a6ef5' }, { app: 'Waze', v: 85, c: '#1a944a' }, { app: 'Google Maps', v: 95, c: '#d85a30' }],
-        quote: '"Navigatie is goed voor Nederland maar Google Maps heeft soms betere routes."'
+        id: 10, name: 'Batterij & opwarming', x: 34, y: 16, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,17', mentions: '47', sentiment: '−0,17 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 34, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 58, c: '#9ca3af' }],
+        quote: 'Perceptiekloof +0,24 — concurrent +0,08.'
       },
       {
-        id: 13, name: 'Instellingen aanpassen', x: 22, y: 35, zone: 'killer', fm: false, pro: false,
-        fmscore: '–', mentions: '267', sentiment: '18% positief',
-        bars: [{ app: 'Flitsmeister', v: 20, c: '#1a6ef5' }, { app: 'Waze', v: 78, c: '#1a944a' }, { app: 'Google Maps', v: 82, c: '#d85a30' }],
-        quote: '"Waze biedt zoveel meer aanpassingsopties. Flitsmeister voelt daarin beperkt."'
+        id: 11, name: 'Filemeldingen', x: 43, y: 13, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,07', mentions: '34', sentiment: '−0,07 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 43, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 75, c: '#9ca3af' }],
+        quote: 'Grootste perceptiekloof (+0,33): concurrent +0,25 vs FM −0,07.'
       },
       {
-        id: 16, name: 'Rijprestaties bekijken', x: 20, y: 32, zone: 'killer', fm: false, pro: false,
-        fmscore: '–', mentions: '189', sentiment: '15% positief',
-        bars: [{ app: 'Flitsmeister', v: 15, c: '#1a6ef5' }, { app: 'Waze', v: 72, c: '#1a944a' }, { app: 'Google Maps', v: 68, c: '#d85a30' }],
-        quote: '"Ik wil mijn rijgedrag kunnen analyseren zoals in Waze. Dat mist bij FM."'
+        id: 12, name: 'Reclame', x: 13, y: 11, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,37', mentions: '28', sentiment: '−0,37 (zeer negatief)',
+        bars: [{ app: 'Flitsmeister', v: 13, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 32, c: '#9ca3af' }],
+        quote: 'FM-reclame sterk negatief; ook concurrent negatief (−0,18).'
       },
       {
-        id: 17, name: 'Brandstof / EV-prijzen', x: 22, y: 30, zone: 'killer', fm: false, pro: true,
-        fmscore: '–', mentions: '423', sentiment: '12% positief',
-        bars: [{ app: 'Flitsmeister', v: 10, c: '#1a6ef5' }, { app: 'Waze', v: 65, c: '#1a944a' }, { app: 'Google Maps', v: 88, c: '#d85a30' }],
-        quote: '"Google Maps toont EV-laadpalen overal. Flitsmeister heeft dit écht nodig."'
+        id: 13, name: 'Parkeren', x: 20, y: 10, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,30', mentions: '25', sentiment: '−0,30 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 20, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 41, c: '#9ca3af' }],
+        quote: 'Negatief; concurrent −0,09. Perceptiekloof +0,21.'
       },
       {
-        id: 21, name: 'App & voertuig icoon', x: 18, y: 28, zone: 'killer', fm: false, pro: false,
-        fmscore: '–', mentions: '134', sentiment: '11% positief',
-        bars: [{ app: 'Flitsmeister', v: 12, c: '#1a6ef5' }, { app: 'Waze', v: 90, c: '#1a944a' }, { app: 'Google Maps', v: 45, c: '#d85a30' }],
-        quote: '"Waarom kan ik mijn avatar niet aanpassen? In Waze kan dat wel, dat is leuk."'
+        id: 14, name: 'Gesproken navigatie', x: 23, y: 9, zone: 'filler', fm: true, pro: false,
+        fmscore: '−0,27', mentions: '21', sentiment: '−0,27 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 23, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 40, c: '#9ca3af' }],
+        quote: 'Gesproken navigatie (TTS) negatief; concurrent −0,10.'
       },
       {
-        id: 19, name: 'Onbeperkt parkeren', x: 62, y: 55, zone: 'premium', fm: false, pro: true,
-        fmscore: '4.6/5', mentions: '521', sentiment: '83% positief',
-        bars: [{ app: 'Flitsmeister PRO', v: 91, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 35, c: '#d85a30' }],
-        quote: '"Parkeren via de app is super handig, bespaart me elke dag tijd in de stad."'
+        id: 15, name: 'Account & inloggen', x: 11, y: 8, zone: 'killer', fm: true, pro: false,
+        fmscore: '−0,39', mentions: '21', sentiment: '−0,39 (zeer negatief)',
+        bars: [{ app: 'Flitsmeister', v: 11, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 23, c: '#9ca3af' }],
+        quote: 'Inlog/account-frustratie; erger dan concurrent (−0,27).'
       },
       {
-        id: 20, name: 'Fine challenge', x: 68, y: 38, zone: 'premium', fm: false, pro: true,
-        fmscore: '4.4/5', mentions: '298', sentiment: '79% positief',
-        bars: [{ app: 'Flitsmeister PRO', v: 88, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 0, c: '#d85a30' }],
-        quote: '"De fine challenge heeft me al twee boetes bespaard. Uniek aan Flitsmeister."'
+        id: 16, name: 'Voertuigprofiel', x: 51, y: 8, zone: 'leader', fm: true, pro: false,
+        fmscore: '+0,01', mentions: '11', sentiment: '+0,01 (neutraal)',
+        bars: [{ app: 'Flitsmeister', v: 51, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 56, c: '#9ca3af' }],
+        quote: 'Neutraal; laag volume (11 vermeldingen).'
       },
       {
-        id: 15, name: 'Flitshistorie', x: 55, y: 38, zone: 'premium', fm: false, pro: true,
-        fmscore: '4.2/5', mentions: '211', sentiment: '75% positief',
-        bars: [{ app: 'Flitsmeister PRO', v: 85, c: '#1a6ef5' }, { app: 'Waze', v: 30, c: '#1a944a' }, { app: 'Google Maps', v: 25, c: '#d85a30' }],
-        quote: '"Fijn om mijn rithistorie terug te kunnen kijken. Transparant en betrouwbaar."'
+        id: 17, name: 'Favorieten synchroniseren', x: 44, y: 7, zone: 'filler', fm: true, pro: false,
+        fmscore: '0,00', mentions: '10', sentiment: '0,00 (neutraal)',
+        bars: [{ app: 'Flitsmeister', v: 50, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 67, c: '#9ca3af' }],
+        quote: 'Neutraal bij FM maar concurrent +0,16 — perceptiekloof +0,17.'
       },
       {
-        id: 22, name: 'Ritstatistieken', x: 45, y: 15, zone: 'addon', fm: true, pro: false,
-        fmscore: '3.9/5', mentions: '156', sentiment: '66% positief',
-        bars: [{ app: 'Flitsmeister', v: 74, c: '#1a6ef5' }, { app: 'Waze', v: 70, c: '#1a944a' }, { app: 'Google Maps', v: 60, c: '#d85a30' }],
-        quote: '"Leuk voor af en toe, maar ik gebruik het niet dagelijks."'
+        id: 18, name: 'Snelheidslimiet', x: 37, y: 6, zone: 'killer', fm: true, pro: false,
+        fmscore: '−0,13', mentions: '9', sentiment: '−0,13 (negatief)',
+        bars: [{ app: 'Flitsmeister', v: 37, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 41, c: '#9ca3af' }],
+        quote: 'Laag volume (9). Licht negatief, dicht bij concurrent.'
       },
       {
-        id: 23, name: 'Geluidspacks', x: 40, y: 18, zone: 'addon', fm: true, pro: false,
-        fmscore: '3.7/5', mentions: '98', sentiment: '60% positief',
-        bars: [{ app: 'Flitsmeister', v: 70, c: '#1a6ef5' }, { app: 'Waze', v: 85, c: '#1a944a' }, { app: 'Google Maps', v: 50, c: '#d85a30' }],
-        quote: '"Leuke extra maar niet waarom ik Flitsmeister gebruik."'
+        id: 19, name: 'Offline kaarten', x: 45, y: 5, zone: 'addon', fm: true, pro: false,
+        fmscore: '−0,05', mentions: '3', sentiment: '−0,05 (neutraal)',
+        bars: [{ app: 'Flitsmeister', v: 45, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 42, c: '#9ca3af' }],
+        quote: 'Enige structureel ontbrekende feature: 3 FM-vermeldingen vs concurrent-aandeel 1,4% (aandeelkloof +0,012).'
+      },
+      {
+        id: 20, name: 'EV-routering', x: 50, y: 4, zone: 'leader', fm: false, pro: false,
+        fmscore: 'n.v.t.', mentions: '0', sentiment: '0 vermeldingen',
+        bars: [{ app: 'Flitsmeister', v: 0, c: '#007FE8' }, { app: 'Concurrent (gem.)', v: 50, c: '#9ca3af' }],
+        quote: 'Nog niet besproken bij FM (0 vermeldingen); concurrent nauwelijks (0,4%). Opkomend, nog geen kloof.'
       },
     ];
 
     const ZONE_CLASS = { leader: 'z-leader', filler: 'z-filler', premium: 'z-premium', killer: 'z-killer', addon: 'z-addon' };
-    const ZONE_LABEL = { leader: 'Leader', filler: 'Filler', premium: 'Premium', killer: 'Killer', addon: 'Add-on' };
+    const ZONE_LABEL = { leader: 'Sterkte', filler: 'Zwakke perceptie', premium: 'Premium', killer: 'Pijnpunt', addon: 'Ontbreekt' };
 
     const REVIEWS = [
-      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'iOS', stars: 5, text: '"Beste navigatie-app van Nederland. Flitspaal-alerts kloppen altijd en hij kent alle shortcuts die anderen missen."', tags: ['flitspalen', 'routing'], type: 'pos' },
-      { app: 'Waze', color: '#1a944a', platform: 'Android', stars: 4, text: '"Community-meldingen zijn top, maar voor Nederlandse wegen is Flitsmeister betrouwbaarder. Waze mist een goede offline-modus."', tags: ['community', 'offline'], type: 'neu' },
-      { app: 'Google Maps', color: '#d85a30', platform: 'iOS', stars: 3, text: '"EV-laadintegratie is uitstekend, maar mist flitspaal-alerts voor NL volledig. Flitsmeister wint hier nog steeds ruimschoots."', tags: ['EV-routering', 'flitspalen'], type: 'req' },
-      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'Android', stars: 3, text: '"Fijne app maar het PRO-abonnement is duurder geworden. Nu Google Maps zoveel verbeterd is, twijfel ik of het het waard is."', tags: ['abonnement', 'prijs'], type: 'neg' },
-      { app: 'Waze', color: '#1a944a', platform: 'iOS', stars: 5, text: '"De aanpasmogelijkheden zijn geweldig. Ik mis dit echt in Flitsmeister — geef me mijn eigen avatar en stem!"', tags: ['aanpassen', 'UX'], type: 'req' },
-      { app: 'Google Maps', color: '#d85a30', platform: 'Android', stars: 5, text: '"Live verkeersinformatie is onverslaanbaar. Maar voor flitspalen pak ik altijd Flitsmeister erbij."', tags: ['verkeer', 'navigatie'], type: 'pos' },
-      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'iOS', stars: 4, text: '"CarPlay werkt goed maar crasht soms. Een stabilititeitsupdate zou erg welkom zijn."', tags: ['CarPlay', 'stabiliteit'], type: 'neg' },
-      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'Android', stars: 5, text: '"PRO is elke cent waard. Geen reclame, parkeren via de app — ik ga nooit meer terug."', tags: ['PRO', 'parkeren'], type: 'pos' },
+      // Afgeleide bevindingen uit gap_report.md (geen letterlijke citaten — brondata bevat geen reviewteksten).
+      { app: 'Filemeldingen', color: '#9ca3af', platform: '34 vermeldingen', stars: 3, text: 'Grootste perceptiekloof (+0,33): concurrent +0,25 vs FM −0,07. Concurrenten worden hier veel positiever ervaren.', tags: ['perceptiekloof', 'concurrent voor'], type: 'req' },
+      { app: 'Interface & bediening', color: '#9ca3af', platform: '108 vermeldingen', stars: 3, text: 'Perceptiekloof +0,31. Concurrent +0,17 vs FM −0,14 — UI/UX wordt bij FM negatiever beoordeeld.', tags: ['UI/UX', 'concurrent voor'], type: 'req' },
+      { app: 'Betalen & PRO', color: '#007FE8', platform: '287 vermeldingen', stars: 2, text: 'Meest besproken onderwerp. FM −0,22 vs concurrent +0,08 (kloof +0,30). Prijs en PRO-abonnement zijn de grootste bron van ontevredenheid.', tags: ['prijs', 'PRO'], type: 'neg' },
+      { app: 'Stabiliteit & prestaties', color: '#007FE8', platform: '74 vermeldingen', stars: 1, text: 'Slechtste sentiment van alle features (−0,50). Sectorbreed pijnpunt — ook concurrent zeer negatief (−0,56).', tags: ['stabiliteit', 'crashes'], type: 'neg' },
+      { app: 'Flitspaalwaarschuwingen', color: '#007FE8', platform: '253 vermeldingen', stars: 2, text: 'Zelfs FM\'s kernfeature scoort negatief: −0,13 vs concurrent +0,10 (kloof +0,23).', tags: ['flitspalen', 'kernfeature'], type: 'neg' },
+      { app: 'Account & inloggen', color: '#007FE8', platform: '21 vermeldingen', stars: 1, text: 'Inlog/account-frustratie −0,39, erger dan concurrent (−0,27). FM-specifiek pijnpunt.', tags: ['account', 'inloggen'], type: 'neg' },
+      { app: 'Offline kaarten', color: '#9ca3af', platform: '3 vermeldingen', stars: 3, text: 'Enige structureel ontbrekende feature: FM nauwelijks genoemd (3×) terwijl concurrenten dit wél bieden (aandeelkloof +0,012).', tags: ['ontbreekt', 'offline'], type: 'req' },
+      { app: 'Gevaarwaarschuwingen', color: '#007FE8', platform: '56 vermeldingen', stars: 4, text: 'Enige duidelijk positieve FM-feature (+0,08); FM verslaat hier het concurrentgemiddelde.', tags: ['sterkte', 'FM voor'], type: 'pos' },
     ];
 
+    // Meest besproken onderwerpen in FM-reviews (balk = aandeel van vermeldingen, geschaald).
     const THEMES = [
-      { label: 'Navigatienauwkeurigheid', v: 82, c: '#1a6ef5' },
-      { label: 'Gebruiksgemak', v: 71, c: '#1a944a' },
-      { label: 'Flitspaal-precisie', v: 65, c: '#d85a30' },
-      { label: 'Batterij / prestaties', v: 54, c: '#f59e0b' },
-      { label: 'Abonnementswaarde', v: 41, c: '#dc2626' },
-      { label: 'Offline ondersteuning', v: 28, c: '#9ca3af' },
+      { label: 'Betalen & PRO (287)', v: 94, c: '#f59e0b' },
+      { label: 'Flitspaalwaarschuwingen (253)', v: 83, c: '#f59e0b' },
+      { label: 'Updates & wijzigingen (155)', v: 51, c: '#dc2626' },
+      { label: 'Routebepaling (116)', v: 38, c: '#f59e0b' },
+      { label: 'Interface & bediening (108)', v: 35, c: '#f59e0b' },
+      { label: 'Stabiliteit & prestaties (74)', v: 24, c: '#dc2626' },
     ];
 
     const AI_RESPONSES = {
-      default: `<p>Op basis van <strong>24.817 geanalyseerde reviews</strong> zijn hier de belangrijkste inzichten:</p><ul><li><strong>Flitspaal-alerts</strong> zijn veruit de sterkste troef van FM — 92% positief sentiment, hoog boven concurrenten.</li><li><strong>EV-routering</strong> is de grootste killer-gap: Google Maps scoort 88% tevredenheid, FM staat op 10%. Reviews noemen dit als een groeiende reden om te switchen.</li><li><strong>Aanpasmogelijkheden</strong> zijn een structureel nadeel vs Waze. Gebruikers vragen specifiek om meer personalisatie-opties.</li></ul><p>Aanbeveling: prioriteer EV-routering als Q3-roadmap item — het raakt zowel de killer-gap als het groeiende EV-gebruikersegment.</p>`,
-      killers: `<p><strong>4 killer-features</strong> geïdentificeerd waar concurrenten significant beter scoren:</p><ul><li><strong>EV-routering & brandstofprijzen</strong> (gap score: 78 pt) — Google Maps domineert hier. Groeiende EV-adoptie maakt dit urgent.</li><li><strong>Rijprestaties bekijken</strong> (gap score: 57 pt) — Waze heeft dit goed. Gebruikers willen hun rijgedrag analyseren.</li><li><strong>Uitgebreide instellingen</strong> (gap score: 62 pt) — Waze en Google Maps bieden veel meer configuratie-opties.</li><li><strong>App-personalisatie</strong> (gap score: 78 pt) — Avatars en iconen. Laag in adoptie maar hoog in merkbeleving.</li></ul><p>Prioriteit: EV-routering heeft de hoogste review-urgentie én de grootste strategische impact.</p>`,
-      fillers: `<p>Op basis van reviewanalyse zijn er <strong>3 filler-features</strong> die mogelijk over-geïnvesteerd zijn:</p><ul><li><strong>Automatisch opstarten</strong> — laag vermeld (198x), gemengd sentiment. Gebruikers verwachten dit als standaard, niet als feature.</li><li><strong>Route-informatiebalk</strong> — weinig onderscheidend t.o.v. concurrenten, lage adoptieverwachting.</li><li><strong>Slimme verkeerslichten</strong> — interessant maar slechts in select steden, reviews tonen beperkte waarde buiten pilots.</li></ul><p>Suggestie: investeer de vrijgekomen capaciteit in de killer-features EV-routering en personalisatie.</p>`,
-      ev: `<p>Reviewanalyse voor <strong>EV-routering</strong>:</p><ul><li>Google Maps scoort <strong>4.6/5</strong> specifiek voor EV-laadintegratie — gebruikers noemen live beschikbaarheid en routeplanning als sterktes.</li><li>Flitsmeister wordt in <strong>423 reviews</strong> (afgelopen 6 maanden) specifiek bekritiseerd op het ontbreken hiervan.</li><li>Trend: EV-vermeldingen stegen <strong>+67%</strong> in het afgelopen kwartaal — het is een groeiend pijnpunt.</li></ul><p>Kans: FM heeft al betrouwbaarheidsvertrouwen bij gebruikers. EV-routering toevoegen met dezelfde nauwkeurigheid als flitsers zou een sterke differentiator zijn.</p>`,
-      premium: `<p>Vergelijking <strong>premium feature-waarde</strong> FM vs Waze:</p><ul><li>FM PRO scoort gemiddeld <strong>4.5/5</strong> — Fine challenge en parkeren zijn unieke features die Waze niet biedt.</li><li>Waze's premium (Waze Carpool) richt zich op een ander segment. Direct concurrentieel overlap is beperkt.</li><li>FM's WTP van 42% is gezond, maar <strong>prijs-perceptie verslechtert</strong> — 41% van recente kritische reviews noemt de gestegen PRO-prijs.</li></ul><p>Aanbeveling: communiceer de unieke waarde van Fine challenge en parkeren explicieter. Deze features worden onderderschat in de app store beschrijving.</p>`,
-      improvements: `<p>Top <strong>verbeterpunten</strong> voor Flitsmeister op basis van reviews:</p><ul><li><strong>EV-routering</strong> (423 vermeldingen) — meest urgente gap vs concurrenten.</li><li><strong>CarPlay/Android Auto stabiliteit</strong> (312 vermeldingen) — crashproblemen bij 28% van CarPlay-gebruikers.</li><li><strong>Meer aanpassingsopties</strong> (267 vermeldingen) — thema's, avatars, geluiden.</li><li><strong>Offline-modus verbeteren</strong> (198 vermeldingen) — gebruikers vergelijken met Google Maps.</li><li><strong>PRO-prijs communicatie</strong> (189 vermeldingen) — hogere prijs wordt geaccepteerd mits waarde beter gecommuniceerd.</li></ul>`,
+      default: `<p>Op basis van <strong>6.077 reviews</strong> (4.496 aspect-vermeldingen) over Flitsmeister, Waze, Google Maps en TomTom:</p><ul><li>FM net sentiment is <strong>−0,18</strong> tegenover <strong>−0,04</strong> voor het concurrentiegemiddelde — FM wordt over de hele linie negatiever beoordeeld.</li><li>Grootste perceptiekloof: <strong>filemeldingen</strong> (+0,33), <strong>interface &amp; bediening</strong> (+0,31) en <strong>betalen/PRO</strong> (+0,30).</li><li>Echte pijnpunten (negatief én veel besproken): <strong>stabiliteit &amp; prestaties</strong> (−0,50), <strong>updates &amp; wijzigingen</strong> (−0,38), <strong>account &amp; inloggen</strong> (−0,39).</li><li>Enige feature die structureel ontbreekt vs concurrent: <strong>offline kaarten</strong>.</li></ul><p>Aanbeveling: pak stabiliteit en betalen/PRO eerst aan — hoog volume én grote kloof.</p>`,
+      killers: `<p><strong>5 pijnpunten</strong> (negatief sentiment, hoog volume):</p><ul><li><strong>Stabiliteit &amp; prestaties</strong> (−0,50) — slechtste van alle features, maar sectorbreed (concurrent −0,56), dus relatieve kloof klein.</li><li><strong>Account &amp; inloggen</strong> (−0,39 vs concurrent −0,27) — FM-specifiek.</li><li><strong>Updates &amp; wijzigingen</strong> (−0,38, 155 vermeldingen) — concurrent even laag.</li><li><strong>Android Auto / CarPlay</strong> (−0,20 vs −0,12).</li><li><strong>Snelheidslimiet</strong> (−0,13, laag volume).</li></ul><p>Prioriteit: account/inloggen en updates zijn het meest FM-eigen — daar valt het snelst winst te halen.</p>`,
+      fillers: `<p><strong>Zwakke perceptie</strong> — FM scoort onder het concurrentgemiddelde op veel besproken features:</p><ul><li><strong>Betalen &amp; PRO</strong> (287×, kloof +0,30) en <strong>flitspaalwaarschuwingen</strong> (253×, kloof +0,23) — hoog volume, grote kloof.</li><li><strong>Interface &amp; bediening</strong> (+0,31) en <strong>batterij &amp; opwarming</strong> (+0,24).</li><li><strong>Filemeldingen</strong> (+0,33), <strong>parkeren</strong> (+0,21), <strong>routebepaling</strong> (+0,21).</li></ul><p>Hier ligt de grootste reputatiewinst: concurrenten worden positiever ervaren op dezelfde functies.</p>`,
+      ev: `<p>Reviewanalyse voor <strong>EV-routering</strong>:</p><ul><li>Flitsmeister wordt hierover <strong>0 keer</strong> genoemd in de geanalyseerde reviews.</li><li>Ook bij concurrenten is het volume laag (aandeel 0,4%, sentiment ≈ 0).</li><li>Het is dus een <strong>opkomend thema</strong>, nog géén bewezen kloof — anders dan offline kaarten, de enige feature die FM structureel mist.</li></ul><p>Conclusie: monitoren, maar op basis van deze data niet de hoogste prioriteit.</p>`,
+      premium: `<p><strong>Betalen &amp; PRO</strong> is het meest besproken onderwerp (287 vermeldingen):</p><ul><li>FM-sentiment <strong>−0,22</strong> tegenover <strong>+0,08</strong> bij concurrenten — perceptiekloof <strong>+0,30</strong>.</li><li>Gerelateerd: <strong>reclame</strong> scoort −0,37 (concurrent −0,18) en <strong>parkeren</strong> −0,30 (concurrent −0,09).</li></ul><p>Monetisatie (prijs, PRO, reclame) is een samenhangend ontevredenheidscluster. Aanbeveling: prijs-waarde-communicatie en reclame-ervaring herzien.</p>`,
+      improvements: `<p>Top <strong>verbeterpunten</strong> op basis van perceptiekloof én volume:</p><ul><li><strong>Betalen &amp; PRO</strong> (287×, kloof +0,30) — hoogste volume.</li><li><strong>Interface &amp; bediening</strong> (108×, kloof +0,31).</li><li><strong>Flitspaalwaarschuwingen</strong> (253×, kloof +0,23) — zelfs de kernfeature trailt.</li><li><strong>Stabiliteit &amp; prestaties</strong> (74×, −0,50) — laagste sentiment.</li><li><strong>Filemeldingen</strong> (kloof +0,33) — grootste perceptieachterstand.</li></ul>`,
     };
 
     function getAIResponse(q) {
@@ -513,56 +525,29 @@
     let chart = null;
 
     /* ── FEATURE SIDEBAR DATA ── */
+    // gap_report.md aggregeert alle concurrenten tot één comp_-gemiddelde; geen losse cijfers per app.
+    // Daarom tonen alle keuzes dezelfde gaps (gerangschikt op perceptiekloof). fmScore/refScore = sentiment-index 0-100.
+    const AGG_GAPS = [
+      { id: 11, name: 'Filemeldingen', fmScore: 43, refScore: 75, gap: 33, mentions: '34', sentiment: '−0,07' },
+      { id: 5, name: 'Interface & bediening', fmScore: 36, refScore: 67, gap: 31, mentions: '108', sentiment: '−0,14' },
+      { id: 2, name: 'Betalen & PRO', fmScore: 28, refScore: 58, gap: 30, mentions: '287', sentiment: '−0,22' },
+      { id: 10, name: 'Batterij & opwarming', fmScore: 34, refScore: 58, gap: 24, mentions: '47', sentiment: '−0,17' },
+    ];
     const REF_APP_DATA = {
-      waze: {
-        label: 'Waze',
-        color: '#1a944a',
-        gaps: [
-          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 78, gap: 58, mentions: '267', sentiment: '18%' },
-          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 65, gap: 55, mentions: '423', sentiment: '12%' },
-          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 90, gap: 78, mentions: '134', sentiment: '11%' },
-          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 72, gap: 57, mentions: '189', sentiment: '15%' },
-        ],
-      },
-      gm: {
-        label: 'Google Maps',
-        color: '#d85a30',
-        gaps: [
-          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 88, gap: 78, mentions: '423', sentiment: '12%' },
-          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 82, gap: 62, mentions: '267', sentiment: '18%' },
-          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 68, gap: 53, mentions: '189', sentiment: '15%' },
-          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 45, gap: 33, mentions: '134', sentiment: '11%' },
-        ],
-      },
-      tomtom: {
-        label: 'TomTom GO',
-        color: '#6366f1',
-        gaps: [
-          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 72, gap: 62, mentions: '423', sentiment: '12%' },
-          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 80, gap: 65, mentions: '189', sentiment: '15%' },
-          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 75, gap: 55, mentions: '267', sentiment: '18%' },
-          { id: 22, name: 'Ritstatistieken (uitgebreid)', fmScore: 35, refScore: 82, gap: 47, mentions: '156', sentiment: '34%' },
-        ],
-      },
-      all: {
-        label: 'Alle concurrenten',
-        color: '#888',
-        gaps: [
-          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 75, gap: 65, mentions: '423', sentiment: '12%' },
-          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 78, gap: 58, mentions: '267', sentiment: '18%' },
-          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 73, gap: 58, mentions: '189', sentiment: '15%' },
-          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 62, gap: 50, mentions: '134', sentiment: '11%' },
-        ],
-      },
+      waze: { label: 'Waze', color: '#1a944a', gaps: AGG_GAPS },
+      gm: { label: 'Google Maps', color: '#d85a30', gaps: AGG_GAPS },
+      tomtom: { label: 'TomTom GO', color: '#6366f1', gaps: AGG_GAPS },
+      all: { label: 'Alle concurrenten', color: '#888', gaps: AGG_GAPS },
     };
 
+    // FM relatief sterk = minst negatieve sentiment (score = sentiment-index 0-100).
     const FM_LEADERS = [
-      { id: 2, name: 'Vaste flitspalen', score: 94, zone: 'leader' },
-      { id: 1, name: 'Mobiele flitspalen', score: 96, zone: 'leader' },
-      { id: 3, name: 'Trajectcontrole', score: 91, zone: 'leader' },
-      { id: 4, name: 'Gem. snelheidcheck', score: 89, zone: 'leader' },
-      { id: 8, name: 'Reclamevrij (PRO)', score: 95, zone: 'leader', pro: true },
-      { id: 5, name: 'Snelheidsmeter', score: 85, zone: 'leader' },
+      { id: 8, name: 'Gevaarwaarschuwingen', score: 58, zone: 'leader' },
+      { id: 16, name: 'Voertuigprofiel', score: 51, zone: 'leader' },
+      { id: 17, name: 'Favorieten synchroniseren', score: 50, zone: 'filler' },
+      { id: 7, name: 'GPS-nauwkeurigheid', score: 45, zone: 'leader' },
+      { id: 19, name: 'Offline kaarten', score: 45, zone: 'addon' },
+      { id: 11, name: 'Filemeldingen', score: 43, zone: 'filler' },
     ];
 
     let currentRef = 'waze';
@@ -585,7 +570,7 @@
       <div class="sb-body">
         <div class="sb-name">${f.name}${f.pro ? ' <span style="color:#f59e0b;font-size:9px;font-weight:700;">PRO</span>' : ''}</div>
         <div class="sb-meta">
-          <div class="sb-bar-wrap"><div class="sb-bar" style="width:${f.score}%;background:#1a6ef5;"></div></div>
+          <div class="sb-bar-wrap"><div class="sb-bar" style="width:${f.score}%;background:#007FE8;"></div></div>
           <span class="sb-pct">${f.score}%</span>
         </div>
       </div>
@@ -601,11 +586,11 @@
         <div class="sb-name">${g.name}</div>
         <div class="sb-meta">
           <div class="sb-bar-wrap" title="FM: ${g.fmScore}% vs ${refData.label}: ${g.refScore}%">
-            <div class="sb-bar" style="width:${g.fmScore}%;background:#1a6ef5;"></div>
+            <div class="sb-bar" style="width:${g.fmScore}%;background:#007FE8;"></div>
           </div>
           <span class="sb-gap-badge" style="background:var(--red-bg);color:var(--red-text);">−${g.gap}pt</span>
         </div>
-        <div style="font-size:10px;color:var(--text-hint);margin-top:2px;">${g.mentions} vermeldingen · ${g.sentiment} pos.</div>
+        <div style="font-size:10px;color:var(--text-hint);margin-top:2px;">${g.mentions} vermeldingen · FM-sentiment ${g.sentiment}</div>
       </div>
     </div>`).join('');
     }
@@ -621,7 +606,7 @@
         const d = document.createElement('div');
         d.className = 'fcard';
         d.dataset.id = f.id;
-        d.innerHTML = `<div class="fcard-top"><div class="fcard-num" style="background:${f.fm ? '#1a6ef5' : '#e5e7eb'};color:${f.fm ? '#fff' : '#6b7280'};">${f.id}</div>${f.pro ? '<span style="font-size:10px;color:#f59e0b;font-weight:700;">PRO</span>' : ''}</div><div class="fcard-name">${f.name}</div><span class="zone-badge ${ZONE_CLASS[f.zone]}">${ZONE_LABEL[f.zone]}</span>`;
+        d.innerHTML = `<div class="fcard-top"><div class="fcard-num" style="background:${f.fm ? '#007FE8' : '#e5e7eb'};color:${f.fm ? '#fff' : '#6b7280'};">${f.id}</div>${f.pro ? '<span style="font-size:10px;color:#f59e0b;font-weight:700;">PRO</span>' : ''}</div><div class="fcard-name">${f.name}</div><span class="zone-badge ${ZONE_CLASS[f.zone]}">${ZONE_LABEL[f.zone]}</span>`;
         d.onclick = () => showDetail(f);
         grid.appendChild(d);
       });
@@ -716,7 +701,7 @@
         plugins: [bgPlugin],
         data: {
           datasets: [
-            { label: 'FM features', data: FEATURES.filter(f => f.fm).map(f => ({ x: f.x, y: f.y, r: 13, id: f.id, name: f.name, zone: f.zone })), backgroundColor: '#1a6ef5', borderColor: '#fff', borderWidth: 1.5 },
+            { label: 'FM features', data: FEATURES.filter(f => f.fm).map(f => ({ x: f.x, y: f.y, r: 13, id: f.id, name: f.name, zone: f.zone })), backgroundColor: '#007FE8', borderColor: '#fff', borderWidth: 1.5 },
             { label: 'Gap / concurrent', data: FEATURES.filter(f => !f.fm).map(f => ({ x: f.x, y: f.y, r: 13, id: f.id, name: f.name, zone: f.zone })), backgroundColor: '#e5e7eb', borderColor: '#9ca3af', borderWidth: 1.5 }
           ]
         },
@@ -779,7 +764,7 @@
     };
 
     const SENT_APPS = [
-      { key: 'fm', label: 'Flitsmeister', color: '#1a6ef5', fill: 'rgba(26,110,245,0.07)' },
+      { key: 'fm', label: 'Flitsmeister', color: '#007FE8', fill: 'rgba(0,127,232,0.07)' },
       { key: 'waze', label: 'Waze', color: '#1a944a', fill: 'rgba(26,148,74,0.06)' },
       { key: 'gm', label: 'Google Maps', color: '#d85a30', fill: 'rgba(216,90,48,0.06)' },
     ];
