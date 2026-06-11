@@ -1,710 +1,587 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flitsmeister App Store Intelligence</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flitsmeister App Store Intelligence</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
 
-  :root {
-    --blue: #1a6ef5;
-    --blue-light: #eff4fe;
-    --blue-mid: #dbeafe;
-    --surface: #f5f6f8;
-    --white: #fff;
-    --border: #e8eaed;
-    --border-mid: #d1d5db;
-    --text: #1a1a2e;
-    --text-muted: #6b7280;
-    --text-hint: #9ca3af;
-    --green-bg: #dcfce7; --green-text: #15803d;
-    --yellow-bg: #fef9c3; --yellow-text: #92400e;
-    --red-bg: #fee2e2; --red-text: #b91c1c;
-    --purple-bg: #f3e8ff; --purple-text: #7e22ce;
-    --radius-sm: 6px; --radius: 8px; --radius-lg: 12px;
-    --font: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-
-  html { font-size: 14px; }
-  body { font-family: var(--font); background: var(--surface); color: var(--text); min-height: 100vh; }
-
-  /* ── TOPBAR ── */
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 24px; background: var(--white); border-bottom: 1px solid var(--border);
-  }
-  .topbar-left { display: flex; align-items: center; gap: 10px; }
-  .fm-badge { background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.03em; }
-  .logo-text { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
-  .logo-text span { color: var(--blue); }
-  .nav-pills { display: flex; gap: 2px; margin-left: 18px; }
-  .npill { font-size: 12px; padding: 5px 13px; border-radius: 20px; color: var(--text-muted); cursor: pointer; border: none; background: transparent; transition: all .15s; }
-  .npill:hover { background: #f3f4f6; color: var(--text); }
-  .npill.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
-  .tbtn { font-size: 12px; padding: 6px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--white); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background .15s; }
-  .tbtn:hover { background: var(--surface); }
-  .tbtn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-  .tbtn.primary:hover { background: #1558c8; }
-
-  /* ── DEMO BANNER ── */
-  .demo-banner {
-    background: linear-gradient(90deg, #1a6ef5 0%, #3b82f6 100%);
-    color: #fff; padding: 10px 24px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    font-size: 12px;
-  }
-  .demo-banner strong { font-weight: 600; }
-  .demo-banner-btns { display: flex; gap: 8px; }
-  .demo-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: background .15s; white-space: nowrap; }
-  .demo-btn:hover { background: rgba(255,255,255,0.25); }
-  .demo-btn.highlight { background: #fff; color: var(--blue); font-weight: 600; }
-
-  /* ── MAIN ── */
-  .main { padding: 20px 24px; max-width: 1280px; margin: 0 auto; }
-
-  /* ── METRICS ── */
-  .metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
-  .metric-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; transition: border-color .2s; }
-  .metric-card:hover { border-color: var(--blue); }
-  .metric-label { font-size: 11px; color: var(--text-hint); margin-bottom: 4px; }
-  .metric-val { font-size: 22px; font-weight: 700; line-height: 1.2; }
-  .metric-sub { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-  .up { color: #16a34a; } .down { color: #dc2626; }
-
-  /* ── CARDS ── */
-  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 14px; }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .card-title-left { display: flex; align-items: center; gap: 7px; }
-  .card-title i { font-size: 16px; color: var(--blue); }
-
-  /* ── FILTER PILLS ── */
-  .filter-pills { display: flex; gap: 5px; flex-wrap: wrap; }
-  .fpill { font-size: 11px; padding: 4px 11px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; background: var(--white); transition: all .15s; }
-  .fpill:hover { border-color: var(--blue); color: var(--blue); }
-  .fpill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
-
-  /* ── LFK LEGEND ── */
-  .lfk-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-  .lfk-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
-  .lfk-legend-sq { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-
-  /* ── FEATURE GRID ── */
-  .features-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
-  .fcard { border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 13px; cursor: pointer; background: #fafafa; transition: all .15s; }
-  .fcard:hover { border-color: var(--blue); background: var(--blue-light); transform: translateY(-1px); }
-  .fcard.highlighted { border-color: var(--blue); background: var(--blue-light); }
-  .fcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .fcard-num { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
-  .fcard-name { font-size: 12px; color: var(--text); line-height: 1.35; margin-bottom: 6px; }
-  .zone-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; display: inline-block; }
-  .z-leader { background: var(--green-bg); color: var(--green-text); }
-  .z-filler { background: var(--yellow-bg); color: var(--yellow-text); }
-  .z-premium { background: var(--blue-mid); color: #1d4ed8; }
-  .z-killer { background: var(--red-bg); color: var(--red-text); }
-  .z-addon { background: var(--purple-bg); color: var(--purple-text); }
-
-  /* ── AI PANEL ── */
-  .ai-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 14px; }
-  .ai-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
-  .ai-title i { font-size: 16px; color: var(--blue); }
-  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-  .chip { font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-mid); color: var(--text); cursor: pointer; background: #f9fafb; transition: all .15s; }
-  .chip:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
-  .ask-row { display: flex; gap: 8px; }
-  .ask-input { flex: 1; border: 1px solid var(--border-mid); border-radius: var(--radius); padding: 9px 13px; font-size: 13px; color: var(--text); background: var(--white); outline: none; font-family: var(--font); }
-  .ask-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,110,245,0.1); }
-  .ask-btn { background: var(--blue); border: none; border-radius: var(--radius); padding: 9px 18px; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .15s; white-space: nowrap; }
-  .ask-btn:hover { background: #1558c8; }
-  .ask-btn.loading { opacity: 0.7; cursor: not-allowed; }
-
-  /* ── AI RESPONSE ── */
-  .ai-response { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; display: none; }
-  .ai-response.visible { display: block; }
-  .ai-response-inner { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; font-size: 13px; line-height: 1.65; color: var(--text); }
-  .ai-response-inner p { margin-bottom: 8px; }
-  .ai-response-inner p:last-child { margin-bottom: 0; }
-  .ai-response-inner ul { padding-left: 18px; margin-bottom: 8px; }
-  .ai-response-inner li { margin-bottom: 4px; }
-  .ai-response-inner strong { font-weight: 600; color: var(--text); }
-  .ai-response-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 500; color: var(--blue); }
-  .ai-avatar { width: 22px; height: 22px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-  .ai-avatar i { font-size: 12px; color: #fff; }
-  .typing-dots span { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); margin: 0 2px; animation: blink 1.2s infinite; }
-  .typing-dots span:nth-child(2) { animation-delay: .2s; }
-  .typing-dots span:nth-child(3) { animation-delay: .4s; }
-  @keyframes blink { 0%,80%,100%{opacity:.3} 40%{opacity:1} }
-
-  /* ── APP SELECTOR ── */
-  .app-selectors { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .app-sel { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--white); cursor: pointer; font-size: 12px; color: var(--text-muted); transition: all .15s; user-select: none; }
-  .app-sel.on { border-color: currentColor; font-weight: 500; }
-  .app-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .app-sel-fm { color: #1a6ef5; } .app-sel-waze { color: #1a944a; } .app-sel-gm { color: #d85a30; } .app-sel-tt { color: #6366f1; }
-
-  /* ── REVIEW HIGHLIGHTS ── */
-  .reviews-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-  .review-item { background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; }
-  .review-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
-  .review-app { font-size: 11px; font-weight: 500; color: var(--text-hint); display: flex; align-items: center; gap: 5px; }
-  .review-stars { color: #f59e0b; font-size: 11px; letter-spacing: 1px; }
-  .review-text { font-size: 12px; color: #374151; line-height: 1.55; margin-bottom: 8px; }
-  .review-tags { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-  .rtag { font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted); }
-  .sentiment { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
-  .s-pos { background: var(--green-bg); color: var(--green-text); }
-  .s-neg { background: var(--red-bg); color: var(--red-text); }
-  .s-neu { background: var(--yellow-bg); color: var(--yellow-text); }
-  .s-req { background: var(--blue-mid); color: #1d4ed8; }
-
-  /* ── INFO BANNER ── */
-  .info-banner { background: var(--blue-light); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; }
-  .info-banner i { font-size: 16px; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
-  .info-banner strong { font-weight: 600; color: var(--text); }
-  .info-banner p { color: #374151; font-size: 12px; margin-top: 2px; }
-
-  /* ── FEATURE DETAIL PANEL ── */
-  .detail-panel { display: none; border: 1.5px solid var(--blue); border-radius: var(--radius-lg); background: var(--white); padding: 18px; margin-bottom: 14px; animation: slideDown .2s ease; }
-  .detail-panel.visible { display: block; }
-  @keyframes slideDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-  .detail-title { font-size: 15px; font-weight: 600; color: var(--text); }
-  .detail-close { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 18px; padding: 0; }
-  .detail-close:hover { color: var(--text); }
-  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-  .detail-stat { background: var(--surface); border-radius: var(--radius); padding: 10px 12px; }
-  .detail-stat-label { font-size: 11px; color: var(--text-hint); margin-bottom: 3px; }
-  .detail-stat-val { font-size: 16px; font-weight: 700; color: var(--text); }
-  .comp-bars { display: flex; flex-direction: column; gap: 7px; }
-  .comp-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-  .comp-bar-label { width: 100px; flex-shrink: 0; color: var(--text-muted); }
-  .comp-bar-track { flex: 1; height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
-  .comp-bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
-  .comp-bar-num { width: 30px; text-align: right; color: var(--text-hint); font-size: 11px; }
-
-  /* ── VIEW PANELS ── */
-  .view-panel { display: none; }
-  .view-panel.active { display: block; }
-
-  /* ── FOOTER ── */
-  .footer { text-align: center; padding: 24px; font-size: 11px; color: var(--text-hint); border-top: 1px solid var(--border); margin-top: 8px; }
-
-  /* ── TOOLTIP ── */
-  .chart-tooltip { position: fixed; background: #1a1a2e; color: #fff; font-size: 11px; padding: 7px 11px; border-radius: 7px; pointer-events: none; z-index: 999; display: none; white-space: nowrap; }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-
-  /* ── REF APP BUTTONS ── */
-  .ref-app-btn { display:flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);font-size:12px;color:var(--text-muted);cursor:pointer;width:100%;text-align:left;font-family:var(--font);transition:all .15s; }
-  .ref-app-btn:hover { background:var(--surface);color:var(--text); }
-  .ref-app-btn.active { border-color:var(--blue);background:var(--blue-light);color:var(--blue);font-weight:500; }
-
-  /* ── SIDEBAR FEATURE ROWS ── */
-  .sb-row { display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #f3f4f6;cursor:pointer; }
-  .sb-row:last-child { border-bottom:none; }
-  .sb-row:hover .sb-name { color:var(--blue); }
-  .sb-rank { width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px; }
-  .sb-body { flex:1;min-width:0; }
-  .sb-name { font-size:12px;color:var(--text);line-height:1.35;margin-bottom:3px; }
-  .sb-meta { display:flex;align-items:center;gap:5px; }
-  .sb-bar-wrap { flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden; }
-  .sb-bar { height:100%;border-radius:2px;transition:width .5s ease; }
-  .sb-pct { font-size:10px;color:var(--text-hint);flex-shrink:0;width:26px;text-align:right; }
-  .sb-gap-badge { font-size:10px;padding:1px 6px;border-radius:20px;flex-shrink:0; }
-
-  /* ── SENTIMENT APP BUTTONS ── */
-  .sent-app-btn { display:flex; align-items:center; gap:7px; padding:6px 13px; border:1px solid var(--border); border-radius:20px; background:var(--white); font-size:12px; color:var(--text-muted); cursor:pointer; transition:all .15s; font-family:var(--font); }
-  .sent-app-btn:hover { border-color:var(--border-mid); color:var(--text); }
-  .sent-app-btn.on { border-color:var(--ac,var(--blue)); color:var(--ac,var(--blue)); font-weight:500; background:var(--white); }
-
-  @media (max-width: 900px) {
-    .metrics-row { grid-template-columns: repeat(2, 1fr); }
-    .features-grid { grid-template-columns: repeat(2, 1fr); }
-    .reviews-grid { grid-template-columns: 1fr; }
-    .nav-pills { display: none; }
-    .detail-grid { grid-template-columns: repeat(2, 1fr); }
-    #view-matrix > div:first-child { grid-template-columns: 1fr; }
-  }
-</style>
 </head>
+
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-left">
-    <span class="fm-badge">FM</span>
-    <span class="logo-text">Flitsmeister <span>App Store Intelligence</span></span>
-    <div class="nav-pills">
-      <button class="npill active" onclick="switchView('matrix')">Feature waarde</button>
-      <button class="npill" onclick="switchView('reviews')">Review highlights</button>
-      <button class="npill" onclick="switchView('sentiment')">Sentiment</button>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="fm-badge">FM</span>
+      <span class="logo-text">Flitsmeister <span>App Store Intelligence</span></span>
+      <div class="nav-pills">
+        <button class="npill active" onclick="switchView('matrix')">Feature waarde</button>
+        <button class="npill" onclick="switchView('reviews')">Review highlights</button>
+        <button class="npill" onclick="switchView('sentiment')">Sentiment</button>
+      </div>
     </div>
-  </div>
-  <div class="topbar-right">
-    <button class="tbtn" onclick="cyclePeriod(this)"><i class="ti ti-calendar"></i> <span id="period-label">6 maanden</span></button>
-    <button class="tbtn" onclick="syncData(this)"><i class="ti ti-refresh" id="sync-icon"></i> Sync</button>
-    <button class="tbtn primary"><i class="ti ti-file-export"></i> Export</button>
-  </div>
-</div>
-
-<!-- DEMO BANNER -->
-<div class="demo-banner">
-  <div><strong>Demo modus</strong> — dit is een interactieve preview van de App Store Intelligence tool. Klik op features, filters en de AI-assistent om het product te verkennen.</div>
-  <div class="demo-banner-btns">
-    <button class="demo-btn" onclick="runDemo('killers')">Toon killer-features</button>
-    <button class="demo-btn" onclick="runDemo('ai')">AI-analyse starten</button>
-    <button class="demo-btn highlight" onclick="runDemo('full')">Volledige demo ▶</button>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-  <!-- APP SELECTOR -->
-  <div class="app-selectors">
-    <div class="app-sel app-sel-fm on" onclick="toggleApp(this)" data-app="fm">
-      <span class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister
-    </div>
-    <div class="app-sel app-sel-waze on" onclick="toggleApp(this)" data-app="waze">
-      <span class="app-dot" style="background:#1a944a;"></span> Waze
-    </div>
-    <div class="app-sel app-sel-gm on" onclick="toggleApp(this)" data-app="gm">
-      <span class="app-dot" style="background:#d85a30;"></span> Google Maps
-    </div>
-    <div class="app-sel app-sel-tt" onclick="toggleApp(this)" data-app="tt">
-      <span class="app-dot" style="background:#6366f1;"></span> TomTom GO
-    </div>
-    <span style="font-size:11px;color:var(--text-hint);align-self:center;margin-left:4px;">Klik om apps aan/uit te zetten</span>
-  </div>
-
-  <!-- METRICS -->
-  <div class="metrics-row">
-    <div class="metric-card">
-      <div class="metric-label">Reviews geanalyseerd</div>
-      <div class="metric-val" id="m-reviews">24.817</div>
-      <div class="metric-sub">3 apps · 2 platforms</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">FM gemiddelde score</div>
-      <div class="metric-val" style="color:#15803d;" id="m-score">4,6 ↑</div>
-      <div class="metric-sub up">+0,2 vs. vorige periode</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Killer gaps gevonden</div>
-      <div class="metric-val" style="color:#dc2626;" id="m-killers">4</div>
-      <div class="metric-sub down">concurrent heeft, FM niet</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Competitor WTP</div>
-      <div class="metric-val" id="m-wtp">42%</div>
-      <div class="metric-sub">gemiddelde betalingsbereidheid</div>
+    <div class="topbar-right">
+      <button class="tbtn" onclick="cyclePeriod(this)"><i class="ti ti-calendar"></i> <span id="period-label">6
+          maanden</span></button>
+      <button class="tbtn" onclick="syncData(this)"><i class="ti ti-refresh" id="sync-icon"></i> Sync</button>
+      <button class="tbtn primary"><i class="ti ti-file-export"></i> Export</button>
     </div>
   </div>
 
-  <!-- ── VIEW: MATRIX ── -->
-  <div class="view-panel active" id="view-matrix">
+  <!-- DEMO BANNER -->
+  <div class="demo-banner">
+    <div><strong>Demo modus</strong> — dit is een interactieve preview van de App Store Intelligence tool. Klik op
+      features, filters en de AI-assistent om het product te verkennen.</div>
+    <div class="demo-banner-btns">
+      <button class="demo-btn" onclick="runDemo('killers')">Toon killer-features</button>
+      <button class="demo-btn" onclick="runDemo('ai')">AI-analyse starten</button>
+      <button class="demo-btn highlight" onclick="runDemo('full')">Volledige demo ▶</button>
+    </div>
+  </div>
 
-    <!-- TWO-COLUMN: chart + feature sidebar -->
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:14px;align-items:start;">
+  <!-- MAIN -->
+  <div class="main">
 
-      <!-- LFK CHART -->
-      <div class="card" style="margin-bottom:0;">
+    <!-- APP SELECTOR -->
+    <div class="app-selectors">
+      <div class="app-sel app-sel-fm on" onclick="toggleApp(this)" data-app="fm">
+        <span class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister
+      </div>
+      <div class="app-sel app-sel-waze on" onclick="toggleApp(this)" data-app="waze">
+        <span class="app-dot" style="background:#1a944a;"></span> Waze
+      </div>
+      <div class="app-sel app-sel-gm on" onclick="toggleApp(this)" data-app="gm">
+        <span class="app-dot" style="background:#d85a30;"></span> Google Maps
+      </div>
+      <div class="app-sel app-sel-tt" onclick="toggleApp(this)" data-app="tt">
+        <span class="app-dot" style="background:#6366f1;"></span> TomTom GO
+      </div>
+      <span style="font-size:11px;color:var(--text-hint);align-self:center;margin-left:4px;">Klik om apps aan/uit te
+        zetten</span>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-label">Reviews geanalyseerd</div>
+        <div class="metric-val" id="m-reviews">24.817</div>
+        <div class="metric-sub">3 apps · 2 platforms</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">FM gemiddelde score</div>
+        <div class="metric-val" style="color:#15803d;" id="m-score">4,6 ↑</div>
+        <div class="metric-sub up">+0,2 vs. vorige periode</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Killer gaps gevonden</div>
+        <div class="metric-val" style="color:#dc2626;" id="m-killers">4</div>
+        <div class="metric-sub down">concurrent heeft, FM niet</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Competitor WTP</div>
+        <div class="metric-val" id="m-wtp">42%</div>
+        <div class="metric-sub">gemiddelde betalingsbereidheid</div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: MATRIX ── -->
+    <div class="view-panel active" id="view-matrix">
+
+      <!-- TWO-COLUMN: chart + feature sidebar -->
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:14px;align-items:start;">
+
+        <!-- LFK CHART -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title">
+            <div class="card-title-left"><i class="ti ti-chart-scatter"></i> Leader-Filler-Killer matrix</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span
+                  style="width:10px;height:10px;border-radius:50%;background:#1a6ef5;display:inline-block;"></span> FM
+                feature</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span
+                  style="width:10px;height:10px;border-radius:50%;background:#e5e7eb;border:1.5px solid #9ca3af;display:inline-block;"></span>
+                Concurrent gap</div>
+            </div>
+          </div>
+          <div class="lfk-legend">
+            <div class="lfk-legend-item">
+              <div class="lfk-legend-sq" style="background:#dcfce7;border:1px solid #86efac;"></div> Leaders
+            </div>
+            <div class="lfk-legend-item">
+              <div class="lfk-legend-sq" style="background:#fef9c3;border:1px solid #fde047;"></div> Fillers
+            </div>
+            <div class="lfk-legend-item">
+              <div class="lfk-legend-sq" style="background:#dbeafe;border:1px solid #93c5fd;"></div> Premium leaders /
+              fillers
+            </div>
+            <div class="lfk-legend-item">
+              <div class="lfk-legend-sq" style="background:#fee2e2;border:1px solid #fca5a5;"></div> Killers
+            </div>
+            <div class="lfk-legend-item">
+              <div class="lfk-legend-sq" style="background:#f3e8ff;border:1px solid #d8b4fe;"></div> Add-ons
+            </div>
+          </div>
+          <div style="position:relative;width:100%;height:400px;">
+            <canvas id="lfkChart" role="img"
+              aria-label="Scatter plot van features op de Leader-Filler-Killer matrix"></canvas>
+          </div>
+          <p style="font-size:11px;color:var(--text-hint);margin-top:8px;text-align:center;">Klik op een feature-bubble
+            om details te bekijken</p>
+        </div>
+
+        <!-- FEATURE SIDEBAR -->
+        <div class="card" style="margin-bottom:0;padding:16px;">
+          <!-- ref app selector -->
+          <div style="margin-bottom:14px;">
+            <div
+              style="font-size:11px;font-weight:600;color:var(--text-hint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
+              Vergelijken met</div>
+            <div style="display:flex;flex-direction:column;gap:5px;" id="refAppBtns">
+              <button class="ref-app-btn active" data-ref="waze" onclick="setRefApp('waze',this)"><span class="app-dot"
+                  style="background:#1a944a;"></span> Waze</button>
+              <button class="ref-app-btn" data-ref="gm" onclick="setRefApp('gm',this)"><span class="app-dot"
+                  style="background:#d85a30;"></span> Google Maps</button>
+              <button class="ref-app-btn" data-ref="tomtom" onclick="setRefApp('tomtom',this)"><span class="app-dot"
+                  style="background:#6366f1;"></span> TomTom GO</button>
+              <button class="ref-app-btn" data-ref="all" onclick="setRefApp('all',this)"><span class="app-dot"
+                  style="background:#888;border:1.5px dashed #888;background:transparent;"></span> Alle
+                concurrenten</button>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:14px;">
+            <!-- leaders section -->
+            <div
+              style="font-size:11px;font-weight:600;color:var(--green-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+              <i class="ti ti-trophy" style="font-size:13px;"></i> FM leaders
+            </div>
+            <div id="sidebar-leaders" style="margin-bottom:14px;"></div>
+            <!-- gaps section -->
+            <div
+              style="font-size:11px;font-weight:600;color:var(--red-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+              <i class="ti ti-alert-triangle" style="font-size:13px;"></i> <span id="sidebar-gaps-title">Meest gemiste
+                features</span>
+            </div>
+            <div id="sidebar-gaps"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FEATURE DETAIL PANEL -->
+      <div class="detail-panel" id="detailPanel">
+        <div class="detail-header">
+          <div>
+            <div class="detail-title" id="dp-title">Feature naam</div>
+            <span class="zone-badge z-leader" id="dp-zone">leader</span>
+            <span id="dp-pro"
+              style="display:none;font-size:10px;color:#f59e0b;font-weight:600;margin-left:6px;">PRO</span>
+          </div>
+          <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-stat">
+            <div class="detail-stat-label">FM score in reviews</div>
+            <div class="detail-stat-val" id="dp-fmscore">–</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Vermeldingen (6m)</div>
+            <div class="detail-stat-val" id="dp-mentions">–</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Sentiment</div>
+            <div class="detail-stat-val" id="dp-sentiment">–</div>
+          </div>
+        </div>
+        <div class="card-title-left" style="font-size:12px;font-weight:600;margin-bottom:10px;gap:6px;"><i
+            class="ti ti-chart-bar" style="font-size:14px;color:var(--blue);"></i> Score per app</div>
+        <div class="comp-bars" id="dp-bars"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i
+              class="ti ti-message-quote" style="color:var(--blue);font-size:14px;"></i> Representatieve review</div>
+          <div id="dp-quote"
+            style="font-size:12px;color:#374151;line-height:1.6;background:var(--surface);border-radius:var(--radius);padding:12px 14px;font-style:italic;">
+          </div>
+        </div>
+      </div>
+
+      <!-- FEATURE GRID -->
+      <div class="card">
         <div class="card-title">
-          <div class="card-title-left"><i class="ti ti-chart-scatter"></i> Leader-Filler-Killer matrix</div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span style="width:10px;height:10px;border-radius:50%;background:#1a6ef5;display:inline-block;"></span> FM feature</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);"><span style="width:10px;height:10px;border-radius:50%;background:#e5e7eb;border:1.5px solid #9ca3af;display:inline-block;"></span> Concurrent gap</div>
+          <div class="card-title-left"><i class="ti ti-list"></i> Feature overzicht</div>
+          <div class="filter-pills">
+            <span class="fpill active" onclick="filterZone('all',this)">Alle</span>
+            <span class="fpill" onclick="filterZone('leader',this)">Leaders</span>
+            <span class="fpill" onclick="filterZone('filler',this)">Fillers</span>
+            <span class="fpill" onclick="filterZone('killer',this)">Killers</span>
+            <span class="fpill" onclick="filterZone('premium',this)">Premium</span>
+            <span class="fpill" onclick="filterZone('addon',this)">Add-ons</span>
           </div>
         </div>
-        <div class="lfk-legend">
-          <div class="lfk-legend-item"><div class="lfk-legend-sq" style="background:#dcfce7;border:1px solid #86efac;"></div> Leaders</div>
-          <div class="lfk-legend-item"><div class="lfk-legend-sq" style="background:#fef9c3;border:1px solid #fde047;"></div> Fillers</div>
-          <div class="lfk-legend-item"><div class="lfk-legend-sq" style="background:#dbeafe;border:1px solid #93c5fd;"></div> Premium leaders / fillers</div>
-          <div class="lfk-legend-item"><div class="lfk-legend-sq" style="background:#fee2e2;border:1px solid #fca5a5;"></div> Killers</div>
-          <div class="lfk-legend-item"><div class="lfk-legend-sq" style="background:#f3e8ff;border:1px solid #d8b4fe;"></div> Add-ons</div>
-        </div>
-        <div style="position:relative;width:100%;height:400px;">
-          <canvas id="lfkChart" role="img" aria-label="Scatter plot van features op de Leader-Filler-Killer matrix"></canvas>
-        </div>
-        <p style="font-size:11px;color:var(--text-hint);margin-top:8px;text-align:center;">Klik op een feature-bubble om details te bekijken</p>
-      </div>
-
-      <!-- FEATURE SIDEBAR -->
-      <div class="card" style="margin-bottom:0;padding:16px;">
-        <!-- ref app selector -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:600;color:var(--text-hint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Vergelijken met</div>
-          <div style="display:flex;flex-direction:column;gap:5px;" id="refAppBtns">
-            <button class="ref-app-btn active" data-ref="waze"   onclick="setRefApp('waze',this)"><span class="app-dot" style="background:#1a944a;"></span> Waze</button>
-            <button class="ref-app-btn"        data-ref="gm"     onclick="setRefApp('gm',this)"><span class="app-dot" style="background:#d85a30;"></span> Google Maps</button>
-            <button class="ref-app-btn"        data-ref="tomtom" onclick="setRefApp('tomtom',this)"><span class="app-dot" style="background:#6366f1;"></span> TomTom GO</button>
-            <button class="ref-app-btn"        data-ref="all"    onclick="setRefApp('all',this)"><span class="app-dot" style="background:#888;border:1.5px dashed #888;background:transparent;"></span> Alle concurrenten</button>
-          </div>
-        </div>
-        <div style="border-top:1px solid var(--border);padding-top:14px;">
-          <!-- leaders section -->
-          <div style="font-size:11px;font-weight:600;color:var(--green-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
-            <i class="ti ti-trophy" style="font-size:13px;"></i> FM leaders
-          </div>
-          <div id="sidebar-leaders" style="margin-bottom:14px;"></div>
-          <!-- gaps section -->
-          <div style="font-size:11px;font-weight:600;color:var(--red-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
-            <i class="ti ti-alert-triangle" style="font-size:13px;"></i> <span id="sidebar-gaps-title">Meest gemiste features</span>
-          </div>
-          <div id="sidebar-gaps"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- FEATURE DETAIL PANEL -->
-    <div class="detail-panel" id="detailPanel">
-      <div class="detail-header">
-        <div>
-          <div class="detail-title" id="dp-title">Feature naam</div>
-          <span class="zone-badge z-leader" id="dp-zone">leader</span>
-          <span id="dp-pro" style="display:none;font-size:10px;color:#f59e0b;font-weight:600;margin-left:6px;">PRO</span>
-        </div>
-        <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-stat"><div class="detail-stat-label">FM score in reviews</div><div class="detail-stat-val" id="dp-fmscore">–</div></div>
-        <div class="detail-stat"><div class="detail-stat-label">Vermeldingen (6m)</div><div class="detail-stat-val" id="dp-mentions">–</div></div>
-        <div class="detail-stat"><div class="detail-stat-label">Sentiment</div><div class="detail-stat-val" id="dp-sentiment">–</div></div>
-      </div>
-      <div class="card-title-left" style="font-size:12px;font-weight:600;margin-bottom:10px;gap:6px;"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--blue);"></i> Score per app</div>
-      <div class="comp-bars" id="dp-bars"></div>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-message-quote" style="color:var(--blue);font-size:14px;"></i> Representatieve review</div>
-        <div id="dp-quote" style="font-size:12px;color:#374151;line-height:1.6;background:var(--surface);border-radius:var(--radius);padding:12px 14px;font-style:italic;"></div>
+        <div class="features-grid" id="featureGrid"></div>
       </div>
     </div>
 
-    <!-- FEATURE GRID -->
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-left"><i class="ti ti-list"></i> Feature overzicht</div>
+    <!-- ── VIEW: REVIEWS ── -->
+    <div class="view-panel" id="view-reviews">
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left"><i class="ti ti-message-dots"></i> Recente review-highlights</div>
+          <div class="filter-pills">
+            <span class="fpill active" onclick="filterReviews('all',this)">Alle</span>
+            <span class="fpill" onclick="filterReviews('pos',this)">Positief</span>
+            <span class="fpill" onclick="filterReviews('neg',this)">Negatief</span>
+            <span class="fpill" onclick="filterReviews('req',this)">Verzoeken</span>
+          </div>
+        </div>
+        <div class="reviews-grid" id="reviewsGrid"></div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: SENTIMENT ── -->
+    <div class="view-panel" id="view-sentiment">
+
+      <!-- controls row -->
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sent-app-toggles">
+          <button class="sent-app-btn on" data-app="fm" style="--ac:#1a6ef5;" onclick="toggleSentApp(this)"><span
+              class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister</button>
+          <button class="sent-app-btn on" data-app="waze" style="--ac:#1a944a;" onclick="toggleSentApp(this)"><span
+              class="app-dot" style="background:#1a944a;"></span> Waze</button>
+          <button class="sent-app-btn on" data-app="gm" style="--ac:#d85a30;" onclick="toggleSentApp(this)"><span
+              class="app-dot" style="background:#d85a30;"></span> Google Maps</button>
+        </div>
         <div class="filter-pills">
-          <span class="fpill active" onclick="filterZone('all',this)">Alle</span>
-          <span class="fpill" onclick="filterZone('leader',this)">Leaders</span>
-          <span class="fpill" onclick="filterZone('filler',this)">Fillers</span>
-          <span class="fpill" onclick="filterZone('killer',this)">Killers</span>
-          <span class="fpill" onclick="filterZone('premium',this)">Premium</span>
-          <span class="fpill" onclick="filterZone('addon',this)">Add-ons</span>
+          <span class="fpill active" id="rng-6" onclick="setRange(6,this)">6 mnd</span>
+          <span class="fpill" id="rng-12" onclick="setRange(12,this)">12 mnd</span>
+          <span class="fpill" id="rng-24" onclick="setRange(24,this)">24 mnd</span>
+          <span class="fpill" id="rng-36" onclick="setRange(36,this)">36 mnd</span>
         </div>
       </div>
-      <div class="features-grid" id="featureGrid"></div>
-    </div>
-  </div>
 
-  <!-- ── VIEW: REVIEWS ── -->
-  <div class="view-panel" id="view-reviews">
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-left"><i class="ti ti-message-dots"></i> Recente review-highlights</div>
-        <div class="filter-pills">
-          <span class="fpill active" onclick="filterReviews('all',this)">Alle</span>
-          <span class="fpill" onclick="filterReviews('pos',this)">Positief</span>
-          <span class="fpill" onclick="filterReviews('neg',this)">Negatief</span>
-          <span class="fpill" onclick="filterReviews('req',this)">Verzoeken</span>
+      <!-- overall sentiment -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left"><i class="ti ti-mood-smile"></i> Algemeen sentiment</div>
+          <div style="display:flex;gap:12px;" id="sent-legend-overall"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews per maand — alle
+          review-onderwerpen</div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="sentChart-overall" role="img" aria-label="Algemeen sentiment per app over 36 maanden"></canvas>
         </div>
       </div>
-      <div class="reviews-grid" id="reviewsGrid"></div>
+
+      <!-- cost sentiment -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left"><i class="ti ti-coin"></i> Kosten­sentiment</div>
+          <div style="display:flex;gap:12px;" id="sent-legend-cost"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews over prijs,
+          abonnement en waarde-voor-geld</div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="sentChart-cost" role="img" aria-label="Kostensentiment per app over 36 maanden"></canvas>
+        </div>
+      </div>
+
+      <!-- feature sentiment -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left"><i class="ti ti-puzzle"></i> Feature­sentiment</div>
+          <div style="display:flex;gap:12px;" id="sent-legend-feature"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews over specifieke
+          app-functies en functionaliteit</div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="sentChart-feature" role="img" aria-label="Featuresentiment per app over 36 maanden"></canvas>
+        </div>
+      </div>
+
+      <!-- themes bar -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left"><i class="ti ti-chart-bar"></i> Populairste review-thema's</div>
+        </div>
+        <div id="themesBars" style="padding-top:4px;"></div>
+      </div>
     </div>
+
+    <!-- AI PANEL (always visible) -->
+    <div class="ai-card" id="aiCard">
+      <div class="ai-title"><i class="ti ti-sparkles"></i> Vraag AI over de data</div>
+      <div class="chip-row" id="chipRow">
+        <div class="chip"
+          onclick="askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?')">
+          Killer-features prioriteren ↗</div>
+        <div class="chip" onclick="askQuestion('Welke filler-features kunnen worden afgebouwd of vereenvoudigd?')">
+          Fillers afbouwen? ↗</div>
+        <div class="chip"
+          onclick="askQuestion('Wat zeggen reviews over EV-routering bij Google Maps vs Flitsmeister?')">EV-routering
+          reviews ↗</div>
+        <div class="chip" onclick="askQuestion('Vergelijk de premium feature waarde van Flitsmeister vs Waze')">Premium
+          FM vs Waze ↗</div>
+        <div class="chip" onclick="askQuestion('Wat zijn de meest genoemde verbeterpunten voor Flitsmeister?')">
+          Verbeterpunten FM ↗</div>
+      </div>
+      <div class="ask-row">
+        <input class="ask-input" type="text" id="askInput"
+          placeholder="Stel een vraag over feature waarde, gaps of review sentiment…">
+        <button class="ask-btn" id="askBtn" onclick="submitQuestion()"><i class="ti ti-send"></i> Analyseer</button>
+      </div>
+      <div class="ai-response" id="aiResponse">
+        <div class="ai-response-header">
+          <div class="ai-avatar"><i class="ti ti-robot"></i></div>
+          <span>App Store Intelligence</span>
+        </div>
+        <div id="aiResponseText" class="ai-response-inner"></div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ── VIEW: SENTIMENT ── -->
-  <div class="view-panel" id="view-sentiment">
+  <div class="footer">Flitsmeister App Store Intelligence · Demo · Gebaseerd op 24.817 reviews van iOS App Store en
+    Google Play · Laatste sync: vandaag</div>
 
-    <!-- controls row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sent-app-toggles">
-        <button class="sent-app-btn on" data-app="fm"   style="--ac:#1a6ef5;" onclick="toggleSentApp(this)"><span class="app-dot" style="background:#1a6ef5;"></span> Flitsmeister</button>
-        <button class="sent-app-btn on" data-app="waze" style="--ac:#1a944a;" onclick="toggleSentApp(this)"><span class="app-dot" style="background:#1a944a;"></span> Waze</button>
-        <button class="sent-app-btn on" data-app="gm"   style="--ac:#d85a30;" onclick="toggleSentApp(this)"><span class="app-dot" style="background:#d85a30;"></span> Google Maps</button>
-      </div>
-      <div class="filter-pills">
-        <span class="fpill active" id="rng-6"  onclick="setRange(6,this)">6 mnd</span>
-        <span class="fpill"        id="rng-12" onclick="setRange(12,this)">12 mnd</span>
-        <span class="fpill"        id="rng-24" onclick="setRange(24,this)">24 mnd</span>
-        <span class="fpill"        id="rng-36" onclick="setRange(36,this)">36 mnd</span>
-      </div>
-    </div>
+  <div class="chart-tooltip" id="chartTooltip"></div>
 
-    <!-- overall sentiment -->
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-left"><i class="ti ti-mood-smile"></i> Algemeen sentiment</div>
-        <div style="display:flex;gap:12px;" id="sent-legend-overall"></div>
-      </div>
-      <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews per maand — alle review-onderwerpen</div>
-      <div style="position:relative;width:100%;height:240px;">
-        <canvas id="sentChart-overall" role="img" aria-label="Algemeen sentiment per app over 36 maanden"></canvas>
-      </div>
-    </div>
+  <script>
+    const FEATURES = [
+      {
+        id: 1, name: 'Mobiele flitspalen', x: 35, y: 88, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.8/5', mentions: '1.243', sentiment: '92% positief',
+        bars: [{ app: 'Flitsmeister', v: 96, c: '#1a6ef5' }, { app: 'Waze', v: 82, c: '#1a944a' }, { app: 'Google Maps', v: 41, c: '#d85a30' }],
+        quote: '"De flitspaal-alerts zijn altijd spot-on. Ik vertrouw Flitsmeister meer dan welke andere app ook."'
+      },
+      {
+        id: 2, name: 'Vaste flitspalen', x: 40, y: 92, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.7/5', mentions: '987', sentiment: '89% positief',
+        bars: [{ app: 'Flitsmeister', v: 94, c: '#1a6ef5' }, { app: 'Waze', v: 80, c: '#1a944a' }, { app: 'Google Maps', v: 38, c: '#d85a30' }],
+        quote: '"Vaste flitsers altijd correct. Al 3 jaar geen boete meer dankzij deze app."'
+      },
+      {
+        id: 3, name: 'Trajectcontrole', x: 38, y: 78, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.6/5', mentions: '654', sentiment: '85% positief',
+        bars: [{ app: 'Flitsmeister', v: 91, c: '#1a6ef5' }, { app: 'Waze', v: 55, c: '#1a944a' }, { app: 'Google Maps', v: 20, c: '#d85a30' }],
+        quote: '"Trajectcontrole werkt perfect, altijd op tijd gewaarschuwd."'
+      },
+      {
+        id: 4, name: 'Gem. snelheidcheck', x: 60, y: 80, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.5/5', mentions: '431', sentiment: '81% positief',
+        bars: [{ app: 'Flitsmeister', v: 89, c: '#1a6ef5' }, { app: 'Waze', v: 60, c: '#1a944a' }, { app: 'Google Maps', v: 30, c: '#d85a30' }],
+        quote: '"Gemiddelde snelheidscontroles goed gemarkeerd, handig op de snelweg."'
+      },
+      {
+        id: 5, name: 'Snelheidsmeter', x: 48, y: 75, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.4/5', mentions: '389', sentiment: '78% positief',
+        bars: [{ app: 'Flitsmeister', v: 85, c: '#1a6ef5' }, { app: 'Waze', v: 70, c: '#1a944a' }, { app: 'Google Maps', v: 65, c: '#d85a30' }],
+        quote: '"De snelheidsmeter is nauwkeuriger dan mijn eigen dashboard."'
+      },
+      {
+        id: 6, name: 'Veiligheidswaarschuwingen', x: 58, y: 72, zone: 'leader', fm: true, pro: false,
+        fmscore: '4.3/5', mentions: '312', sentiment: '76% positief',
+        bars: [{ app: 'Flitsmeister', v: 83, c: '#1a6ef5' }, { app: 'Waze', v: 75, c: '#1a944a' }, { app: 'Google Maps', v: 55, c: '#d85a30' }],
+        quote: '"Ik word altijd op tijd gewaarschuwd voor gevaarlijke situaties."'
+      },
+      {
+        id: 7, name: 'Automatisch opstarten', x: 25, y: 58, zone: 'filler', fm: true, pro: false,
+        fmscore: '3.8/5', mentions: '198', sentiment: '62% positief',
+        bars: [{ app: 'Flitsmeister', v: 72, c: '#1a6ef5' }, { app: 'Waze', v: 68, c: '#1a944a' }, { app: 'Google Maps', v: 60, c: '#d85a30' }],
+        quote: '"Handig dat de app automatisch start, maar soms iets te snel."'
+      },
+      {
+        id: 8, name: 'Reclamevrij (PRO)', x: 82, y: 62, zone: 'leader', fm: false, pro: true,
+        fmscore: '4.7/5', mentions: '892', sentiment: '88% positief',
+        bars: [{ app: 'Flitsmeister PRO', v: 95, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 0, c: '#d85a30' }],
+        quote: '"PRO is het waard alleen al voor de reclamevrije ervaring tijdens het rijden."'
+      },
+      {
+        id: 9, name: 'CarPlay / Android Auto', x: 42, y: 55, zone: 'filler', fm: true, pro: false,
+        fmscore: '4.0/5', mentions: '445', sentiment: '70% positief',
+        bars: [{ app: 'Flitsmeister', v: 78, c: '#1a6ef5' }, { app: 'Waze', v: 82, c: '#1a944a' }, { app: 'Google Maps', v: 88, c: '#d85a30' }],
+        quote: '"CarPlay werkt goed maar soms crasht de verbinding — stabiliteitstupdate nodig."'
+      },
+      {
+        id: 12, name: 'Navigatie', x: 28, y: 42, zone: 'filler', fm: true, pro: false,
+        fmscore: '4.1/5', mentions: '1.102', sentiment: '74% positief',
+        bars: [{ app: 'Flitsmeister', v: 80, c: '#1a6ef5' }, { app: 'Waze', v: 85, c: '#1a944a' }, { app: 'Google Maps', v: 95, c: '#d85a30' }],
+        quote: '"Navigatie is goed voor Nederland maar Google Maps heeft soms betere routes."'
+      },
+      {
+        id: 13, name: 'Instellingen aanpassen', x: 22, y: 35, zone: 'killer', fm: false, pro: false,
+        fmscore: '–', mentions: '267', sentiment: '18% positief',
+        bars: [{ app: 'Flitsmeister', v: 20, c: '#1a6ef5' }, { app: 'Waze', v: 78, c: '#1a944a' }, { app: 'Google Maps', v: 82, c: '#d85a30' }],
+        quote: '"Waze biedt zoveel meer aanpassingsopties. Flitsmeister voelt daarin beperkt."'
+      },
+      {
+        id: 16, name: 'Rijprestaties bekijken', x: 20, y: 32, zone: 'killer', fm: false, pro: false,
+        fmscore: '–', mentions: '189', sentiment: '15% positief',
+        bars: [{ app: 'Flitsmeister', v: 15, c: '#1a6ef5' }, { app: 'Waze', v: 72, c: '#1a944a' }, { app: 'Google Maps', v: 68, c: '#d85a30' }],
+        quote: '"Ik wil mijn rijgedrag kunnen analyseren zoals in Waze. Dat mist bij FM."'
+      },
+      {
+        id: 17, name: 'Brandstof / EV-prijzen', x: 22, y: 30, zone: 'killer', fm: false, pro: true,
+        fmscore: '–', mentions: '423', sentiment: '12% positief',
+        bars: [{ app: 'Flitsmeister', v: 10, c: '#1a6ef5' }, { app: 'Waze', v: 65, c: '#1a944a' }, { app: 'Google Maps', v: 88, c: '#d85a30' }],
+        quote: '"Google Maps toont EV-laadpalen overal. Flitsmeister heeft dit écht nodig."'
+      },
+      {
+        id: 21, name: 'App & voertuig icoon', x: 18, y: 28, zone: 'killer', fm: false, pro: false,
+        fmscore: '–', mentions: '134', sentiment: '11% positief',
+        bars: [{ app: 'Flitsmeister', v: 12, c: '#1a6ef5' }, { app: 'Waze', v: 90, c: '#1a944a' }, { app: 'Google Maps', v: 45, c: '#d85a30' }],
+        quote: '"Waarom kan ik mijn avatar niet aanpassen? In Waze kan dat wel, dat is leuk."'
+      },
+      {
+        id: 19, name: 'Onbeperkt parkeren', x: 62, y: 55, zone: 'premium', fm: false, pro: true,
+        fmscore: '4.6/5', mentions: '521', sentiment: '83% positief',
+        bars: [{ app: 'Flitsmeister PRO', v: 91, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 35, c: '#d85a30' }],
+        quote: '"Parkeren via de app is super handig, bespaart me elke dag tijd in de stad."'
+      },
+      {
+        id: 20, name: 'Fine challenge', x: 68, y: 38, zone: 'premium', fm: false, pro: true,
+        fmscore: '4.4/5', mentions: '298', sentiment: '79% positief',
+        bars: [{ app: 'Flitsmeister PRO', v: 88, c: '#1a6ef5' }, { app: 'Waze', v: 0, c: '#1a944a' }, { app: 'Google Maps', v: 0, c: '#d85a30' }],
+        quote: '"De fine challenge heeft me al twee boetes bespaard. Uniek aan Flitsmeister."'
+      },
+      {
+        id: 15, name: 'Flitshistorie', x: 55, y: 38, zone: 'premium', fm: false, pro: true,
+        fmscore: '4.2/5', mentions: '211', sentiment: '75% positief',
+        bars: [{ app: 'Flitsmeister PRO', v: 85, c: '#1a6ef5' }, { app: 'Waze', v: 30, c: '#1a944a' }, { app: 'Google Maps', v: 25, c: '#d85a30' }],
+        quote: '"Fijn om mijn rithistorie terug te kunnen kijken. Transparant en betrouwbaar."'
+      },
+      {
+        id: 22, name: 'Ritstatistieken', x: 45, y: 15, zone: 'addon', fm: true, pro: false,
+        fmscore: '3.9/5', mentions: '156', sentiment: '66% positief',
+        bars: [{ app: 'Flitsmeister', v: 74, c: '#1a6ef5' }, { app: 'Waze', v: 70, c: '#1a944a' }, { app: 'Google Maps', v: 60, c: '#d85a30' }],
+        quote: '"Leuk voor af en toe, maar ik gebruik het niet dagelijks."'
+      },
+      {
+        id: 23, name: 'Geluidspacks', x: 40, y: 18, zone: 'addon', fm: true, pro: false,
+        fmscore: '3.7/5', mentions: '98', sentiment: '60% positief',
+        bars: [{ app: 'Flitsmeister', v: 70, c: '#1a6ef5' }, { app: 'Waze', v: 85, c: '#1a944a' }, { app: 'Google Maps', v: 50, c: '#d85a30' }],
+        quote: '"Leuke extra maar niet waarom ik Flitsmeister gebruik."'
+      },
+    ];
 
-    <!-- cost sentiment -->
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-left"><i class="ti ti-coin"></i> Kosten­sentiment</div>
-        <div style="display:flex;gap:12px;" id="sent-legend-cost"></div>
-      </div>
-      <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews over prijs, abonnement en waarde-voor-geld</div>
-      <div style="position:relative;width:100%;height:240px;">
-        <canvas id="sentChart-cost" role="img" aria-label="Kostensentiment per app over 36 maanden"></canvas>
-      </div>
-    </div>
+    const ZONE_CLASS = { leader: 'z-leader', filler: 'z-filler', premium: 'z-premium', killer: 'z-killer', addon: 'z-addon' };
+    const ZONE_LABEL = { leader: 'Leader', filler: 'Filler', premium: 'Premium', killer: 'Killer', addon: 'Add-on' };
 
-    <!-- feature sentiment -->
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-left"><i class="ti ti-puzzle"></i> Feature­sentiment</div>
-        <div style="display:flex;gap:12px;" id="sent-legend-feature"></div>
-      </div>
-      <div style="font-size:12px;color:var(--text-hint);margin-bottom:12px;">% positieve reviews over specifieke app-functies en functionaliteit</div>
-      <div style="position:relative;width:100%;height:240px;">
-        <canvas id="sentChart-feature" role="img" aria-label="Featuresentiment per app over 36 maanden"></canvas>
-      </div>
-    </div>
+    const REVIEWS = [
+      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'iOS', stars: 5, text: '"Beste navigatie-app van Nederland. Flitspaal-alerts kloppen altijd en hij kent alle shortcuts die anderen missen."', tags: ['flitspalen', 'routing'], type: 'pos' },
+      { app: 'Waze', color: '#1a944a', platform: 'Android', stars: 4, text: '"Community-meldingen zijn top, maar voor Nederlandse wegen is Flitsmeister betrouwbaarder. Waze mist een goede offline-modus."', tags: ['community', 'offline'], type: 'neu' },
+      { app: 'Google Maps', color: '#d85a30', platform: 'iOS', stars: 3, text: '"EV-laadintegratie is uitstekend, maar mist flitspaal-alerts voor NL volledig. Flitsmeister wint hier nog steeds ruimschoots."', tags: ['EV-routering', 'flitspalen'], type: 'req' },
+      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'Android', stars: 3, text: '"Fijne app maar het PRO-abonnement is duurder geworden. Nu Google Maps zoveel verbeterd is, twijfel ik of het het waard is."', tags: ['abonnement', 'prijs'], type: 'neg' },
+      { app: 'Waze', color: '#1a944a', platform: 'iOS', stars: 5, text: '"De aanpasmogelijkheden zijn geweldig. Ik mis dit echt in Flitsmeister — geef me mijn eigen avatar en stem!"', tags: ['aanpassen', 'UX'], type: 'req' },
+      { app: 'Google Maps', color: '#d85a30', platform: 'Android', stars: 5, text: '"Live verkeersinformatie is onverslaanbaar. Maar voor flitspalen pak ik altijd Flitsmeister erbij."', tags: ['verkeer', 'navigatie'], type: 'pos' },
+      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'iOS', stars: 4, text: '"CarPlay werkt goed maar crasht soms. Een stabilititeitsupdate zou erg welkom zijn."', tags: ['CarPlay', 'stabiliteit'], type: 'neg' },
+      { app: 'Flitsmeister', color: '#1a6ef5', platform: 'Android', stars: 5, text: '"PRO is elke cent waard. Geen reclame, parkeren via de app — ik ga nooit meer terug."', tags: ['PRO', 'parkeren'], type: 'pos' },
+    ];
 
-    <!-- themes bar -->
-    <div class="card">
-      <div class="card-title"><div class="card-title-left"><i class="ti ti-chart-bar"></i> Populairste review-thema's</div></div>
-      <div id="themesBars" style="padding-top:4px;"></div>
-    </div>
-  </div>
+    const THEMES = [
+      { label: 'Navigatienauwkeurigheid', v: 82, c: '#1a6ef5' },
+      { label: 'Gebruiksgemak', v: 71, c: '#1a944a' },
+      { label: 'Flitspaal-precisie', v: 65, c: '#d85a30' },
+      { label: 'Batterij / prestaties', v: 54, c: '#f59e0b' },
+      { label: 'Abonnementswaarde', v: 41, c: '#dc2626' },
+      { label: 'Offline ondersteuning', v: 28, c: '#9ca3af' },
+    ];
 
-  <!-- AI PANEL (always visible) -->
-  <div class="ai-card" id="aiCard">
-    <div class="ai-title"><i class="ti ti-sparkles"></i> Vraag AI over de data</div>
-    <div class="chip-row" id="chipRow">
-      <div class="chip" onclick="askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?')">Killer-features prioriteren ↗</div>
-      <div class="chip" onclick="askQuestion('Welke filler-features kunnen worden afgebouwd of vereenvoudigd?')">Fillers afbouwen? ↗</div>
-      <div class="chip" onclick="askQuestion('Wat zeggen reviews over EV-routering bij Google Maps vs Flitsmeister?')">EV-routering reviews ↗</div>
-      <div class="chip" onclick="askQuestion('Vergelijk de premium feature waarde van Flitsmeister vs Waze')">Premium FM vs Waze ↗</div>
-      <div class="chip" onclick="askQuestion('Wat zijn de meest genoemde verbeterpunten voor Flitsmeister?')">Verbeterpunten FM ↗</div>
-    </div>
-    <div class="ask-row">
-      <input class="ask-input" type="text" id="askInput" placeholder="Stel een vraag over feature waarde, gaps of review sentiment…">
-      <button class="ask-btn" id="askBtn" onclick="submitQuestion()"><i class="ti ti-send"></i> Analyseer</button>
-    </div>
-    <div class="ai-response" id="aiResponse">
-      <div class="ai-response-header">
-        <div class="ai-avatar"><i class="ti ti-robot"></i></div>
-        <span>App Store Intelligence</span>
-      </div>
-      <div id="aiResponseText" class="ai-response-inner"></div>
-    </div>
-  </div>
+    const AI_RESPONSES = {
+      default: `<p>Op basis van <strong>24.817 geanalyseerde reviews</strong> zijn hier de belangrijkste inzichten:</p><ul><li><strong>Flitspaal-alerts</strong> zijn veruit de sterkste troef van FM — 92% positief sentiment, hoog boven concurrenten.</li><li><strong>EV-routering</strong> is de grootste killer-gap: Google Maps scoort 88% tevredenheid, FM staat op 10%. Reviews noemen dit als een groeiende reden om te switchen.</li><li><strong>Aanpasmogelijkheden</strong> zijn een structureel nadeel vs Waze. Gebruikers vragen specifiek om meer personalisatie-opties.</li></ul><p>Aanbeveling: prioriteer EV-routering als Q3-roadmap item — het raakt zowel de killer-gap als het groeiende EV-gebruikersegment.</p>`,
+      killers: `<p><strong>4 killer-features</strong> geïdentificeerd waar concurrenten significant beter scoren:</p><ul><li><strong>EV-routering & brandstofprijzen</strong> (gap score: 78 pt) — Google Maps domineert hier. Groeiende EV-adoptie maakt dit urgent.</li><li><strong>Rijprestaties bekijken</strong> (gap score: 57 pt) — Waze heeft dit goed. Gebruikers willen hun rijgedrag analyseren.</li><li><strong>Uitgebreide instellingen</strong> (gap score: 62 pt) — Waze en Google Maps bieden veel meer configuratie-opties.</li><li><strong>App-personalisatie</strong> (gap score: 78 pt) — Avatars en iconen. Laag in adoptie maar hoog in merkbeleving.</li></ul><p>Prioriteit: EV-routering heeft de hoogste review-urgentie én de grootste strategische impact.</p>`,
+      fillers: `<p>Op basis van reviewanalyse zijn er <strong>3 filler-features</strong> die mogelijk over-geïnvesteerd zijn:</p><ul><li><strong>Automatisch opstarten</strong> — laag vermeld (198x), gemengd sentiment. Gebruikers verwachten dit als standaard, niet als feature.</li><li><strong>Route-informatiebalk</strong> — weinig onderscheidend t.o.v. concurrenten, lage adoptieverwachting.</li><li><strong>Slimme verkeerslichten</strong> — interessant maar slechts in select steden, reviews tonen beperkte waarde buiten pilots.</li></ul><p>Suggestie: investeer de vrijgekomen capaciteit in de killer-features EV-routering en personalisatie.</p>`,
+      ev: `<p>Reviewanalyse voor <strong>EV-routering</strong>:</p><ul><li>Google Maps scoort <strong>4.6/5</strong> specifiek voor EV-laadintegratie — gebruikers noemen live beschikbaarheid en routeplanning als sterktes.</li><li>Flitsmeister wordt in <strong>423 reviews</strong> (afgelopen 6 maanden) specifiek bekritiseerd op het ontbreken hiervan.</li><li>Trend: EV-vermeldingen stegen <strong>+67%</strong> in het afgelopen kwartaal — het is een groeiend pijnpunt.</li></ul><p>Kans: FM heeft al betrouwbaarheidsvertrouwen bij gebruikers. EV-routering toevoegen met dezelfde nauwkeurigheid als flitsers zou een sterke differentiator zijn.</p>`,
+      premium: `<p>Vergelijking <strong>premium feature-waarde</strong> FM vs Waze:</p><ul><li>FM PRO scoort gemiddeld <strong>4.5/5</strong> — Fine challenge en parkeren zijn unieke features die Waze niet biedt.</li><li>Waze's premium (Waze Carpool) richt zich op een ander segment. Direct concurrentieel overlap is beperkt.</li><li>FM's WTP van 42% is gezond, maar <strong>prijs-perceptie verslechtert</strong> — 41% van recente kritische reviews noemt de gestegen PRO-prijs.</li></ul><p>Aanbeveling: communiceer de unieke waarde van Fine challenge en parkeren explicieter. Deze features worden onderderschat in de app store beschrijving.</p>`,
+      improvements: `<p>Top <strong>verbeterpunten</strong> voor Flitsmeister op basis van reviews:</p><ul><li><strong>EV-routering</strong> (423 vermeldingen) — meest urgente gap vs concurrenten.</li><li><strong>CarPlay/Android Auto stabiliteit</strong> (312 vermeldingen) — crashproblemen bij 28% van CarPlay-gebruikers.</li><li><strong>Meer aanpassingsopties</strong> (267 vermeldingen) — thema's, avatars, geluiden.</li><li><strong>Offline-modus verbeteren</strong> (198 vermeldingen) — gebruikers vergelijken met Google Maps.</li><li><strong>PRO-prijs communicatie</strong> (189 vermeldingen) — hogere prijs wordt geaccepteerd mits waarde beter gecommuniceerd.</li></ul>`,
+    };
 
-</div>
+    function getAIResponse(q) {
+      const ql = q.toLowerCase();
+      if (ql.includes('killer')) return AI_RESPONSES.killers;
+      if (ql.includes('filler')) return AI_RESPONSES.fillers;
+      if (ql.includes('ev') || ql.includes('elektrisch') || ql.includes('laad')) return AI_RESPONSES.ev;
+      if (ql.includes('premium') || ql.includes('waze')) return AI_RESPONSES.premium;
+      if (ql.includes('verbeter') || ql.includes('punt')) return AI_RESPONSES.improvements;
+      return AI_RESPONSES.default;
+    }
 
-<div class="footer">Flitsmeister App Store Intelligence · Demo · Gebaseerd op 24.817 reviews van iOS App Store en Google Play · Laatste sync: vandaag</div>
+    let currentFilter = 'all';
+    let chart = null;
 
-<div class="chart-tooltip" id="chartTooltip"></div>
+    /* ── FEATURE SIDEBAR DATA ── */
+    const REF_APP_DATA = {
+      waze: {
+        label: 'Waze',
+        color: '#1a944a',
+        gaps: [
+          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 78, gap: 58, mentions: '267', sentiment: '18%' },
+          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 65, gap: 55, mentions: '423', sentiment: '12%' },
+          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 90, gap: 78, mentions: '134', sentiment: '11%' },
+          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 72, gap: 57, mentions: '189', sentiment: '15%' },
+        ],
+      },
+      gm: {
+        label: 'Google Maps',
+        color: '#d85a30',
+        gaps: [
+          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 88, gap: 78, mentions: '423', sentiment: '12%' },
+          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 82, gap: 62, mentions: '267', sentiment: '18%' },
+          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 68, gap: 53, mentions: '189', sentiment: '15%' },
+          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 45, gap: 33, mentions: '134', sentiment: '11%' },
+        ],
+      },
+      tomtom: {
+        label: 'TomTom GO',
+        color: '#6366f1',
+        gaps: [
+          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 72, gap: 62, mentions: '423', sentiment: '12%' },
+          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 80, gap: 65, mentions: '189', sentiment: '15%' },
+          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 75, gap: 55, mentions: '267', sentiment: '18%' },
+          { id: 22, name: 'Ritstatistieken (uitgebreid)', fmScore: 35, refScore: 82, gap: 47, mentions: '156', sentiment: '34%' },
+        ],
+      },
+      all: {
+        label: 'Alle concurrenten',
+        color: '#888',
+        gaps: [
+          { id: 17, name: 'Brandstof / EV-prijzen', fmScore: 10, refScore: 75, gap: 65, mentions: '423', sentiment: '12%' },
+          { id: 13, name: 'Instellingen aanpassen', fmScore: 20, refScore: 78, gap: 58, mentions: '267', sentiment: '18%' },
+          { id: 16, name: 'Rijprestaties bekijken', fmScore: 15, refScore: 73, gap: 58, mentions: '189', sentiment: '15%' },
+          { id: 21, name: 'App & voertuig icoon', fmScore: 12, refScore: 62, gap: 50, mentions: '134', sentiment: '11%' },
+        ],
+      },
+    };
 
-<script>
-const FEATURES = [
-  { id:1,  name:'Mobiele flitspalen',       x:35,y:88,zone:'leader', fm:true, pro:false,
-    fmscore:'4.8/5', mentions:'1.243', sentiment:'92% positief',
-    bars:[{app:'Flitsmeister',v:96,c:'#1a6ef5'},{app:'Waze',v:82,c:'#1a944a'},{app:'Google Maps',v:41,c:'#d85a30'}],
-    quote:'"De flitspaal-alerts zijn altijd spot-on. Ik vertrouw Flitsmeister meer dan welke andere app ook."' },
-  { id:2,  name:'Vaste flitspalen',          x:40,y:92,zone:'leader', fm:true, pro:false,
-    fmscore:'4.7/5', mentions:'987', sentiment:'89% positief',
-    bars:[{app:'Flitsmeister',v:94,c:'#1a6ef5'},{app:'Waze',v:80,c:'#1a944a'},{app:'Google Maps',v:38,c:'#d85a30'}],
-    quote:'"Vaste flitsers altijd correct. Al 3 jaar geen boete meer dankzij deze app."' },
-  { id:3,  name:'Trajectcontrole',           x:38,y:78,zone:'leader', fm:true, pro:false,
-    fmscore:'4.6/5', mentions:'654', sentiment:'85% positief',
-    bars:[{app:'Flitsmeister',v:91,c:'#1a6ef5'},{app:'Waze',v:55,c:'#1a944a'},{app:'Google Maps',v:20,c:'#d85a30'}],
-    quote:'"Trajectcontrole werkt perfect, altijd op tijd gewaarschuwd."' },
-  { id:4,  name:'Gem. snelheidcheck',        x:60,y:80,zone:'leader', fm:true, pro:false,
-    fmscore:'4.5/5', mentions:'431', sentiment:'81% positief',
-    bars:[{app:'Flitsmeister',v:89,c:'#1a6ef5'},{app:'Waze',v:60,c:'#1a944a'},{app:'Google Maps',v:30,c:'#d85a30'}],
-    quote:'"Gemiddelde snelheidscontroles goed gemarkeerd, handig op de snelweg."' },
-  { id:5,  name:'Snelheidsmeter',            x:48,y:75,zone:'leader', fm:true, pro:false,
-    fmscore:'4.4/5', mentions:'389', sentiment:'78% positief',
-    bars:[{app:'Flitsmeister',v:85,c:'#1a6ef5'},{app:'Waze',v:70,c:'#1a944a'},{app:'Google Maps',v:65,c:'#d85a30'}],
-    quote:'"De snelheidsmeter is nauwkeuriger dan mijn eigen dashboard."' },
-  { id:6,  name:'Veiligheidswaarschuwingen', x:58,y:72,zone:'leader', fm:true, pro:false,
-    fmscore:'4.3/5', mentions:'312', sentiment:'76% positief',
-    bars:[{app:'Flitsmeister',v:83,c:'#1a6ef5'},{app:'Waze',v:75,c:'#1a944a'},{app:'Google Maps',v:55,c:'#d85a30'}],
-    quote:'"Ik word altijd op tijd gewaarschuwd voor gevaarlijke situaties."' },
-  { id:7,  name:'Automatisch opstarten',     x:25,y:58,zone:'filler', fm:true, pro:false,
-    fmscore:'3.8/5', mentions:'198', sentiment:'62% positief',
-    bars:[{app:'Flitsmeister',v:72,c:'#1a6ef5'},{app:'Waze',v:68,c:'#1a944a'},{app:'Google Maps',v:60,c:'#d85a30'}],
-    quote:'"Handig dat de app automatisch start, maar soms iets te snel."' },
-  { id:8,  name:'Reclamevrij (PRO)',         x:82,y:62,zone:'leader', fm:false,pro:true,
-    fmscore:'4.7/5', mentions:'892', sentiment:'88% positief',
-    bars:[{app:'Flitsmeister PRO',v:95,c:'#1a6ef5'},{app:'Waze',v:0,c:'#1a944a'},{app:'Google Maps',v:0,c:'#d85a30'}],
-    quote:'"PRO is het waard alleen al voor de reclamevrije ervaring tijdens het rijden."' },
-  { id:9,  name:'CarPlay / Android Auto',    x:42,y:55,zone:'filler', fm:true, pro:false,
-    fmscore:'4.0/5', mentions:'445', sentiment:'70% positief',
-    bars:[{app:'Flitsmeister',v:78,c:'#1a6ef5'},{app:'Waze',v:82,c:'#1a944a'},{app:'Google Maps',v:88,c:'#d85a30'}],
-    quote:'"CarPlay werkt goed maar soms crasht de verbinding — stabiliteitstupdate nodig."' },
-  { id:12, name:'Navigatie',                 x:28,y:42,zone:'filler', fm:true, pro:false,
-    fmscore:'4.1/5', mentions:'1.102', sentiment:'74% positief',
-    bars:[{app:'Flitsmeister',v:80,c:'#1a6ef5'},{app:'Waze',v:85,c:'#1a944a'},{app:'Google Maps',v:95,c:'#d85a30'}],
-    quote:'"Navigatie is goed voor Nederland maar Google Maps heeft soms betere routes."' },
-  { id:13, name:'Instellingen aanpassen',    x:22,y:35,zone:'killer',  fm:false,pro:false,
-    fmscore:'–', mentions:'267', sentiment:'18% positief',
-    bars:[{app:'Flitsmeister',v:20,c:'#1a6ef5'},{app:'Waze',v:78,c:'#1a944a'},{app:'Google Maps',v:82,c:'#d85a30'}],
-    quote:'"Waze biedt zoveel meer aanpassingsopties. Flitsmeister voelt daarin beperkt."' },
-  { id:16, name:'Rijprestaties bekijken',    x:20,y:32,zone:'killer',  fm:false,pro:false,
-    fmscore:'–', mentions:'189', sentiment:'15% positief',
-    bars:[{app:'Flitsmeister',v:15,c:'#1a6ef5'},{app:'Waze',v:72,c:'#1a944a'},{app:'Google Maps',v:68,c:'#d85a30'}],
-    quote:'"Ik wil mijn rijgedrag kunnen analyseren zoals in Waze. Dat mist bij FM."' },
-  { id:17, name:'Brandstof / EV-prijzen',    x:22,y:30,zone:'killer',  fm:false,pro:true,
-    fmscore:'–', mentions:'423', sentiment:'12% positief',
-    bars:[{app:'Flitsmeister',v:10,c:'#1a6ef5'},{app:'Waze',v:65,c:'#1a944a'},{app:'Google Maps',v:88,c:'#d85a30'}],
-    quote:'"Google Maps toont EV-laadpalen overal. Flitsmeister heeft dit écht nodig."' },
-  { id:21, name:'App & voertuig icoon',      x:18,y:28,zone:'killer',  fm:false,pro:false,
-    fmscore:'–', mentions:'134', sentiment:'11% positief',
-    bars:[{app:'Flitsmeister',v:12,c:'#1a6ef5'},{app:'Waze',v:90,c:'#1a944a'},{app:'Google Maps',v:45,c:'#d85a30'}],
-    quote:'"Waarom kan ik mijn avatar niet aanpassen? In Waze kan dat wel, dat is leuk."' },
-  { id:19, name:'Onbeperkt parkeren',        x:62,y:55,zone:'premium', fm:false,pro:true,
-    fmscore:'4.6/5', mentions:'521', sentiment:'83% positief',
-    bars:[{app:'Flitsmeister PRO',v:91,c:'#1a6ef5'},{app:'Waze',v:0,c:'#1a944a'},{app:'Google Maps',v:35,c:'#d85a30'}],
-    quote:'"Parkeren via de app is super handig, bespaart me elke dag tijd in de stad."' },
-  { id:20, name:'Fine challenge',            x:68,y:38,zone:'premium', fm:false,pro:true,
-    fmscore:'4.4/5', mentions:'298', sentiment:'79% positief',
-    bars:[{app:'Flitsmeister PRO',v:88,c:'#1a6ef5'},{app:'Waze',v:0,c:'#1a944a'},{app:'Google Maps',v:0,c:'#d85a30'}],
-    quote:'"De fine challenge heeft me al twee boetes bespaard. Uniek aan Flitsmeister."' },
-  { id:15, name:'Flitshistorie',             x:55,y:38,zone:'premium', fm:false,pro:true,
-    fmscore:'4.2/5', mentions:'211', sentiment:'75% positief',
-    bars:[{app:'Flitsmeister PRO',v:85,c:'#1a6ef5'},{app:'Waze',v:30,c:'#1a944a'},{app:'Google Maps',v:25,c:'#d85a30'}],
-    quote:'"Fijn om mijn rithistorie terug te kunnen kijken. Transparant en betrouwbaar."' },
-  { id:22, name:'Ritstatistieken',           x:45,y:15,zone:'addon',   fm:true, pro:false,
-    fmscore:'3.9/5', mentions:'156', sentiment:'66% positief',
-    bars:[{app:'Flitsmeister',v:74,c:'#1a6ef5'},{app:'Waze',v:70,c:'#1a944a'},{app:'Google Maps',v:60,c:'#d85a30'}],
-    quote:'"Leuk voor af en toe, maar ik gebruik het niet dagelijks."' },
-  { id:23, name:'Geluidspacks',              x:40,y:18,zone:'addon',   fm:true, pro:false,
-    fmscore:'3.7/5', mentions:'98', sentiment:'60% positief',
-    bars:[{app:'Flitsmeister',v:70,c:'#1a6ef5'},{app:'Waze',v:85,c:'#1a944a'},{app:'Google Maps',v:50,c:'#d85a30'}],
-    quote:'"Leuke extra maar niet waarom ik Flitsmeister gebruik."' },
-];
+    const FM_LEADERS = [
+      { id: 2, name: 'Vaste flitspalen', score: 94, zone: 'leader' },
+      { id: 1, name: 'Mobiele flitspalen', score: 96, zone: 'leader' },
+      { id: 3, name: 'Trajectcontrole', score: 91, zone: 'leader' },
+      { id: 4, name: 'Gem. snelheidcheck', score: 89, zone: 'leader' },
+      { id: 8, name: 'Reclamevrij (PRO)', score: 95, zone: 'leader', pro: true },
+      { id: 5, name: 'Snelheidsmeter', score: 85, zone: 'leader' },
+    ];
 
-const ZONE_CLASS = { leader:'z-leader', filler:'z-filler', premium:'z-premium', killer:'z-killer', addon:'z-addon' };
-const ZONE_LABEL = { leader:'Leader', filler:'Filler', premium:'Premium', killer:'Killer', addon:'Add-on' };
+    let currentRef = 'waze';
 
-const REVIEWS = [
-  { app:'Flitsmeister', color:'#1a6ef5', platform:'iOS', stars:5, text:'"Beste navigatie-app van Nederland. Flitspaal-alerts kloppen altijd en hij kent alle shortcuts die anderen missen."', tags:['flitspalen','routing'], type:'pos' },
-  { app:'Waze', color:'#1a944a', platform:'Android', stars:4, text:'"Community-meldingen zijn top, maar voor Nederlandse wegen is Flitsmeister betrouwbaarder. Waze mist een goede offline-modus."', tags:['community','offline'], type:'neu' },
-  { app:'Google Maps', color:'#d85a30', platform:'iOS', stars:3, text:'"EV-laadintegratie is uitstekend, maar mist flitspaal-alerts voor NL volledig. Flitsmeister wint hier nog steeds ruimschoots."', tags:['EV-routering','flitspalen'], type:'req' },
-  { app:'Flitsmeister', color:'#1a6ef5', platform:'Android', stars:3, text:'"Fijne app maar het PRO-abonnement is duurder geworden. Nu Google Maps zoveel verbeterd is, twijfel ik of het het waard is."', tags:['abonnement','prijs'], type:'neg' },
-  { app:'Waze', color:'#1a944a', platform:'iOS', stars:5, text:'"De aanpasmogelijkheden zijn geweldig. Ik mis dit echt in Flitsmeister — geef me mijn eigen avatar en stem!"', tags:['aanpassen','UX'], type:'req' },
-  { app:'Google Maps', color:'#d85a30', platform:'Android', stars:5, text:'"Live verkeersinformatie is onverslaanbaar. Maar voor flitspalen pak ik altijd Flitsmeister erbij."', tags:['verkeer','navigatie'], type:'pos' },
-  { app:'Flitsmeister', color:'#1a6ef5', platform:'iOS', stars:4, text:'"CarPlay werkt goed maar crasht soms. Een stabilititeitsupdate zou erg welkom zijn."', tags:['CarPlay','stabiliteit'], type:'neg' },
-  { app:'Flitsmeister', color:'#1a6ef5', platform:'Android', stars:5, text:'"PRO is elke cent waard. Geen reclame, parkeren via de app — ik ga nooit meer terug."', tags:['PRO','parkeren'], type:'pos' },
-];
+    function setRefApp(ref, el) {
+      currentRef = ref;
+      document.querySelectorAll('.ref-app-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderSidebar();
+    }
 
-const THEMES = [
-  { label:'Navigatienauwkeurigheid', v:82, c:'#1a6ef5' },
-  { label:'Gebruiksgemak', v:71, c:'#1a944a' },
-  { label:'Flitspaal-precisie', v:65, c:'#d85a30' },
-  { label:'Batterij / prestaties', v:54, c:'#f59e0b' },
-  { label:'Abonnementswaarde', v:41, c:'#dc2626' },
-  { label:'Offline ondersteuning', v:28, c:'#9ca3af' },
-];
+    function renderSidebar() {
+      const refData = REF_APP_DATA[currentRef];
 
-const AI_RESPONSES = {
-  default: `<p>Op basis van <strong>24.817 geanalyseerde reviews</strong> zijn hier de belangrijkste inzichten:</p><ul><li><strong>Flitspaal-alerts</strong> zijn veruit de sterkste troef van FM — 92% positief sentiment, hoog boven concurrenten.</li><li><strong>EV-routering</strong> is de grootste killer-gap: Google Maps scoort 88% tevredenheid, FM staat op 10%. Reviews noemen dit als een groeiende reden om te switchen.</li><li><strong>Aanpasmogelijkheden</strong> zijn een structureel nadeel vs Waze. Gebruikers vragen specifiek om meer personalisatie-opties.</li></ul><p>Aanbeveling: prioriteer EV-routering als Q3-roadmap item — het raakt zowel de killer-gap als het groeiende EV-gebruikersegment.</p>`,
-  killers: `<p><strong>4 killer-features</strong> geïdentificeerd waar concurrenten significant beter scoren:</p><ul><li><strong>EV-routering & brandstofprijzen</strong> (gap score: 78 pt) — Google Maps domineert hier. Groeiende EV-adoptie maakt dit urgent.</li><li><strong>Rijprestaties bekijken</strong> (gap score: 57 pt) — Waze heeft dit goed. Gebruikers willen hun rijgedrag analyseren.</li><li><strong>Uitgebreide instellingen</strong> (gap score: 62 pt) — Waze en Google Maps bieden veel meer configuratie-opties.</li><li><strong>App-personalisatie</strong> (gap score: 78 pt) — Avatars en iconen. Laag in adoptie maar hoog in merkbeleving.</li></ul><p>Prioriteit: EV-routering heeft de hoogste review-urgentie én de grootste strategische impact.</p>`,
-  fillers: `<p>Op basis van reviewanalyse zijn er <strong>3 filler-features</strong> die mogelijk over-geïnvesteerd zijn:</p><ul><li><strong>Automatisch opstarten</strong> — laag vermeld (198x), gemengd sentiment. Gebruikers verwachten dit als standaard, niet als feature.</li><li><strong>Route-informatiebalk</strong> — weinig onderscheidend t.o.v. concurrenten, lage adoptieverwachting.</li><li><strong>Slimme verkeerslichten</strong> — interessant maar slechts in select steden, reviews tonen beperkte waarde buiten pilots.</li></ul><p>Suggestie: investeer de vrijgekomen capaciteit in de killer-features EV-routering en personalisatie.</p>`,
-  ev: `<p>Reviewanalyse voor <strong>EV-routering</strong>:</p><ul><li>Google Maps scoort <strong>4.6/5</strong> specifiek voor EV-laadintegratie — gebruikers noemen live beschikbaarheid en routeplanning als sterktes.</li><li>Flitsmeister wordt in <strong>423 reviews</strong> (afgelopen 6 maanden) specifiek bekritiseerd op het ontbreken hiervan.</li><li>Trend: EV-vermeldingen stegen <strong>+67%</strong> in het afgelopen kwartaal — het is een groeiend pijnpunt.</li></ul><p>Kans: FM heeft al betrouwbaarheidsvertrouwen bij gebruikers. EV-routering toevoegen met dezelfde nauwkeurigheid als flitsers zou een sterke differentiator zijn.</p>`,
-  premium: `<p>Vergelijking <strong>premium feature-waarde</strong> FM vs Waze:</p><ul><li>FM PRO scoort gemiddeld <strong>4.5/5</strong> — Fine challenge en parkeren zijn unieke features die Waze niet biedt.</li><li>Waze's premium (Waze Carpool) richt zich op een ander segment. Direct concurrentieel overlap is beperkt.</li><li>FM's WTP van 42% is gezond, maar <strong>prijs-perceptie verslechtert</strong> — 41% van recente kritische reviews noemt de gestegen PRO-prijs.</li></ul><p>Aanbeveling: communiceer de unieke waarde van Fine challenge en parkeren explicieter. Deze features worden onderderschat in de app store beschrijving.</p>`,
-  improvements: `<p>Top <strong>verbeterpunten</strong> voor Flitsmeister op basis van reviews:</p><ul><li><strong>EV-routering</strong> (423 vermeldingen) — meest urgente gap vs concurrenten.</li><li><strong>CarPlay/Android Auto stabiliteit</strong> (312 vermeldingen) — crashproblemen bij 28% van CarPlay-gebruikers.</li><li><strong>Meer aanpassingsopties</strong> (267 vermeldingen) — thema's, avatars, geluiden.</li><li><strong>Offline-modus verbeteren</strong> (198 vermeldingen) — gebruikers vergelijken met Google Maps.</li><li><strong>PRO-prijs communicatie</strong> (189 vermeldingen) — hogere prijs wordt geaccepteerd mits waarde beter gecommuniceerd.</li></ul>`,
-};
-
-function getAIResponse(q) {
-  const ql = q.toLowerCase();
-  if (ql.includes('killer')) return AI_RESPONSES.killers;
-  if (ql.includes('filler')) return AI_RESPONSES.fillers;
-  if (ql.includes('ev') || ql.includes('elektrisch') || ql.includes('laad')) return AI_RESPONSES.ev;
-  if (ql.includes('premium') || ql.includes('waze')) return AI_RESPONSES.premium;
-  if (ql.includes('verbeter') || ql.includes('punt')) return AI_RESPONSES.improvements;
-  return AI_RESPONSES.default;
-}
-
-let currentFilter = 'all';
-let chart = null;
-
-/* ── FEATURE SIDEBAR DATA ── */
-const REF_APP_DATA = {
-  waze: {
-    label: 'Waze',
-    color: '#1a944a',
-    gaps: [
-      { id:13, name:'Instellingen aanpassen', fmScore:20, refScore:78, gap:58, mentions:'267', sentiment:'18%' },
-      { id:17, name:'Brandstof / EV-prijzen',  fmScore:10, refScore:65, gap:55, mentions:'423', sentiment:'12%' },
-      { id:21, name:'App & voertuig icoon',    fmScore:12, refScore:90, gap:78, mentions:'134', sentiment:'11%' },
-      { id:16, name:'Rijprestaties bekijken',  fmScore:15, refScore:72, gap:57, mentions:'189', sentiment:'15%' },
-    ],
-  },
-  gm: {
-    label: 'Google Maps',
-    color: '#d85a30',
-    gaps: [
-      { id:17, name:'Brandstof / EV-prijzen',  fmScore:10, refScore:88, gap:78, mentions:'423', sentiment:'12%' },
-      { id:13, name:'Instellingen aanpassen',  fmScore:20, refScore:82, gap:62, mentions:'267', sentiment:'18%' },
-      { id:16, name:'Rijprestaties bekijken',  fmScore:15, refScore:68, gap:53, mentions:'189', sentiment:'15%' },
-      { id:21, name:'App & voertuig icoon',    fmScore:12, refScore:45, gap:33, mentions:'134', sentiment:'11%' },
-    ],
-  },
-  tomtom: {
-    label: 'TomTom GO',
-    color: '#6366f1',
-    gaps: [
-      { id:17, name:'Brandstof / EV-prijzen',  fmScore:10, refScore:72, gap:62, mentions:'423', sentiment:'12%' },
-      { id:16, name:'Rijprestaties bekijken',  fmScore:15, refScore:80, gap:65, mentions:'189', sentiment:'15%' },
-      { id:13, name:'Instellingen aanpassen',  fmScore:20, refScore:75, gap:55, mentions:'267', sentiment:'18%' },
-      { id:22, name:'Ritstatistieken (uitgebreid)', fmScore:35, refScore:82, gap:47, mentions:'156', sentiment:'34%' },
-    ],
-  },
-  all: {
-    label: 'Alle concurrenten',
-    color: '#888',
-    gaps: [
-      { id:17, name:'Brandstof / EV-prijzen',  fmScore:10, refScore:75, gap:65, mentions:'423', sentiment:'12%' },
-      { id:13, name:'Instellingen aanpassen',  fmScore:20, refScore:78, gap:58, mentions:'267', sentiment:'18%' },
-      { id:16, name:'Rijprestaties bekijken',  fmScore:15, refScore:73, gap:58, mentions:'189', sentiment:'15%' },
-      { id:21, name:'App & voertuig icoon',    fmScore:12, refScore:62, gap:50, mentions:'134', sentiment:'11%' },
-    ],
-  },
-};
-
-const FM_LEADERS = [
-  { id:2,  name:'Vaste flitspalen',        score:94, zone:'leader' },
-  { id:1,  name:'Mobiele flitspalen',      score:96, zone:'leader' },
-  { id:3,  name:'Trajectcontrole',         score:91, zone:'leader' },
-  { id:4,  name:'Gem. snelheidcheck',      score:89, zone:'leader' },
-  { id:8,  name:'Reclamevrij (PRO)',       score:95, zone:'leader', pro:true },
-  { id:5,  name:'Snelheidsmeter',          score:85, zone:'leader' },
-];
-
-let currentRef = 'waze';
-
-function setRefApp(ref, el) {
-  currentRef = ref;
-  document.querySelectorAll('.ref-app-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  renderSidebar();
-}
-
-function renderSidebar() {
-  const refData = REF_APP_DATA[currentRef];
-
-  // Leaders
-  const leadersEl = document.getElementById('sidebar-leaders');
-  leadersEl.innerHTML = FM_LEADERS.map((f, i) => `
+      // Leaders
+      const leadersEl = document.getElementById('sidebar-leaders');
+      leadersEl.innerHTML = FM_LEADERS.map((f, i) => `
     <div class="sb-row" onclick="showDetail(FEATURES.find(x=>x.id===${f.id})||FEATURES[0])">
-      <div class="sb-rank" style="background:var(--green-bg);color:var(--green-text);">${i+1}</div>
+      <div class="sb-rank" style="background:var(--green-bg);color:var(--green-text);">${i + 1}</div>
       <div class="sb-body">
         <div class="sb-name">${f.name}${f.pro ? ' <span style="color:#f59e0b;font-size:9px;font-weight:700;">PRO</span>' : ''}</div>
         <div class="sb-meta">
@@ -714,12 +591,12 @@ function renderSidebar() {
       </div>
     </div>`).join('');
 
-  // Gaps
-  document.getElementById('sidebar-gaps-title').textContent = `Gemist vs ${refData.label}`;
-  const gapsEl = document.getElementById('sidebar-gaps');
-  gapsEl.innerHTML = refData.gaps.map((g, i) => `
+      // Gaps
+      document.getElementById('sidebar-gaps-title').textContent = `Gemist vs ${refData.label}`;
+      const gapsEl = document.getElementById('sidebar-gaps');
+      gapsEl.innerHTML = refData.gaps.map((g, i) => `
     <div class="sb-row" onclick="showDetail(FEATURES.find(x=>x.id===${g.id})||FEATURES[0])">
-      <div class="sb-rank" style="background:var(--red-bg);color:var(--red-text);">${i+1}</div>
+      <div class="sb-rank" style="background:var(--red-bg);color:var(--red-text);">${i + 1}</div>
       <div class="sb-body">
         <div class="sb-name">${g.name}</div>
         <div class="sb-meta">
@@ -731,378 +608,379 @@ function renderSidebar() {
         <div style="font-size:10px;color:var(--text-hint);margin-top:2px;">${g.mentions} vermeldingen · ${g.sentiment} pos.</div>
       </div>
     </div>`).join('');
-}
+    }
 
-/* ── end sidebar ── */
+    /* ── end sidebar ── */
 
-function renderGrid(filter) {
-  currentFilter = filter;
-  const grid = document.getElementById('featureGrid');
-  grid.innerHTML = '';
-  const filtered = filter === 'all' ? FEATURES : FEATURES.filter(f => f.zone === filter);
-  filtered.forEach(f => {
-    const d = document.createElement('div');
-    d.className = 'fcard';
-    d.dataset.id = f.id;
-    d.innerHTML = `<div class="fcard-top"><div class="fcard-num" style="background:${f.fm?'#1a6ef5':'#e5e7eb'};color:${f.fm?'#fff':'#6b7280'};">${f.id}</div>${f.pro?'<span style="font-size:10px;color:#f59e0b;font-weight:700;">PRO</span>':''}</div><div class="fcard-name">${f.name}</div><span class="zone-badge ${ZONE_CLASS[f.zone]}">${ZONE_LABEL[f.zone]}</span>`;
-    d.onclick = () => showDetail(f);
-    grid.appendChild(d);
-  });
-}
-
-function filterZone(zone, el) {
-  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderGrid(zone);
-  closeDetail();
-}
-
-function showDetail(f) {
-  document.querySelectorAll('.fcard').forEach(c => c.classList.remove('highlighted'));
-  const fc = document.querySelector(`.fcard[data-id="${f.id}"]`);
-  if (fc) fc.classList.add('highlighted');
-
-  document.getElementById('dp-title').textContent = f.name;
-  const zb = document.getElementById('dp-zone');
-  zb.textContent = ZONE_LABEL[f.zone];
-  zb.className = `zone-badge ${ZONE_CLASS[f.zone]}`;
-  document.getElementById('dp-pro').style.display = f.pro ? 'inline' : 'none';
-  document.getElementById('dp-fmscore').textContent = f.fmscore;
-  document.getElementById('dp-mentions').textContent = f.mentions;
-  document.getElementById('dp-sentiment').textContent = f.sentiment;
-  document.getElementById('dp-quote').textContent = f.quote;
-
-  const barsEl = document.getElementById('dp-bars');
-  barsEl.innerHTML = '';
-  f.bars.forEach(b => {
-    barsEl.innerHTML += `<div class="comp-bar-row"><span class="comp-bar-label">${b.app}</span><div class="comp-bar-track"><div class="comp-bar-fill" style="width:${b.v}%;background:${b.c};"></div></div><span class="comp-bar-num">${b.v}%</span></div>`;
-  });
-
-  const panel = document.getElementById('detailPanel');
-  panel.classList.add('visible');
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function closeDetail() {
-  document.getElementById('detailPanel').classList.remove('visible');
-  document.querySelectorAll('.fcard').forEach(c => c.classList.remove('highlighted'));
-}
-
-function renderReviews(filter) {
-  const grid = document.getElementById('reviewsGrid');
-  grid.innerHTML = '';
-  const filtered = filter === 'all' ? REVIEWS : REVIEWS.filter(r => r.type === filter);
-  filtered.forEach(r => {
-    const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
-    const typeMap = { pos:'s-pos', neg:'s-neg', neu:'s-neu', req:'s-req' };
-    const typeLabel = { pos:'positief', neg:'negatief', neu:'gemengd', req:'feature verzoek' };
-    const tagsHtml = r.tags.map(t => `<span class="rtag">${t}</span>`).join('');
-    grid.innerHTML += `<div class="review-item"><div class="review-top"><div class="review-app"><span class="app-dot" style="background:${r.color};"></span>${r.app} · ${r.platform}</div><span class="review-stars">${stars}</span></div><div class="review-text">${r.text}</div><div class="review-tags">${tagsHtml}<span class="sentiment ${typeMap[r.type]}">${typeLabel[r.type]}</span></div></div>`;
-  });
-}
-
-function filterReviews(type, el) {
-  document.querySelectorAll('#view-reviews .fpill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderReviews(type);
-}
-
-function renderThemes() {
-  const el = document.getElementById('themesBars');
-  el.innerHTML = THEMES.map(t => `<div class="comp-bar-row" style="margin-bottom:10px;"><span class="comp-bar-label" style="width:130px;font-size:12px;">${t.label}</span><div class="comp-bar-track" style="flex:1;height:8px;"><div class="comp-bar-fill" style="width:${t.v}%;background:${t.c};"></div></div><span class="comp-bar-num" style="font-size:12px;">${t.v}%</span></div>`).join('');
-}
-
-function buildLFK() {
-  const ctx = document.getElementById('lfkChart').getContext('2d');
-  const bgPlugin = {
-    id: 'zoneBg',
-    beforeDraw(chart) {
-      const { ctx, chartArea: { left, right, top, bottom }, scales: { x, y } } = chart;
-      const midX = x.getPixelForValue(50), midY = y.getPixelForValue(50);
-      ctx.save();
-      [
-        { x1:left,  x2:midX, y1:top,   y2:midY,   bg:'rgba(254,249,195,0.55)', bd:'#fde047', label:'Fillers' },
-        { x1:midX, x2:right, y1:top,   y2:midY,   bg:'rgba(220,252,231,0.55)', bd:'#86efac', label:'Leaders' },
-        { x1:left,  x2:midX, y1:midY,  y2:bottom, bg:'rgba(254,226,226,0.55)', bd:'#fca5a5', label:'Killers' },
-        { x1:midX, x2:right, y1:midY,  y2:bottom, bg:'rgba(219,234,254,0.55)', bd:'#93c5fd', label:'Premium / add-ons' },
-      ].forEach(z => {
-        ctx.fillStyle = z.bg; ctx.fillRect(z.x1,z.y1,z.x2-z.x1,z.y2-z.y1);
-        ctx.strokeStyle = z.bd; ctx.lineWidth = 0.5; ctx.strokeRect(z.x1,z.y1,z.x2-z.x1,z.y2-z.y1);
-        ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.font='500 11px sans-serif';
-        ctx.fillText(z.label, z.x1+8, z.y1+16);
+    function renderGrid(filter) {
+      currentFilter = filter;
+      const grid = document.getElementById('featureGrid');
+      grid.innerHTML = '';
+      const filtered = filter === 'all' ? FEATURES : FEATURES.filter(f => f.zone === filter);
+      filtered.forEach(f => {
+        const d = document.createElement('div');
+        d.className = 'fcard';
+        d.dataset.id = f.id;
+        d.innerHTML = `<div class="fcard-top"><div class="fcard-num" style="background:${f.fm ? '#1a6ef5' : '#e5e7eb'};color:${f.fm ? '#fff' : '#6b7280'};">${f.id}</div>${f.pro ? '<span style="font-size:10px;color:#f59e0b;font-weight:700;">PRO</span>' : ''}</div><div class="fcard-name">${f.name}</div><span class="zone-badge ${ZONE_CLASS[f.zone]}">${ZONE_LABEL[f.zone]}</span>`;
+        d.onclick = () => showDetail(f);
+        grid.appendChild(d);
       });
-      ctx.restore();
     }
-  };
-  chart = new Chart(ctx, {
-    type: 'bubble',
-    plugins: [bgPlugin],
-    data: {
-      datasets: [
-        { label:'FM features', data: FEATURES.filter(f=>f.fm).map(f=>({x:f.x,y:f.y,r:13,id:f.id,name:f.name,zone:f.zone})), backgroundColor:'#1a6ef5', borderColor:'#fff', borderWidth:1.5 },
-        { label:'Gap / concurrent', data: FEATURES.filter(f=>!f.fm).map(f=>({x:f.x,y:f.y,r:13,id:f.id,name:f.name,zone:f.zone})), backgroundColor:'#e5e7eb', borderColor:'#9ca3af', borderWidth:1.5 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      layout: { padding: 8 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: { label: c => `#${c.raw.id} ${c.raw.name} [${ZONE_LABEL[c.raw.zone]}]` }
+
+    function filterZone(zone, el) {
+      document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      renderGrid(zone);
+      closeDetail();
+    }
+
+    function showDetail(f) {
+      document.querySelectorAll('.fcard').forEach(c => c.classList.remove('highlighted'));
+      const fc = document.querySelector(`.fcard[data-id="${f.id}"]`);
+      if (fc) fc.classList.add('highlighted');
+
+      document.getElementById('dp-title').textContent = f.name;
+      const zb = document.getElementById('dp-zone');
+      zb.textContent = ZONE_LABEL[f.zone];
+      zb.className = `zone-badge ${ZONE_CLASS[f.zone]}`;
+      document.getElementById('dp-pro').style.display = f.pro ? 'inline' : 'none';
+      document.getElementById('dp-fmscore').textContent = f.fmscore;
+      document.getElementById('dp-mentions').textContent = f.mentions;
+      document.getElementById('dp-sentiment').textContent = f.sentiment;
+      document.getElementById('dp-quote').textContent = f.quote;
+
+      const barsEl = document.getElementById('dp-bars');
+      barsEl.innerHTML = '';
+      f.bars.forEach(b => {
+        barsEl.innerHTML += `<div class="comp-bar-row"><span class="comp-bar-label">${b.app}</span><div class="comp-bar-track"><div class="comp-bar-fill" style="width:${b.v}%;background:${b.c};"></div></div><span class="comp-bar-num">${b.v}%</span></div>`;
+      });
+
+      const panel = document.getElementById('detailPanel');
+      panel.classList.add('visible');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeDetail() {
+      document.getElementById('detailPanel').classList.remove('visible');
+      document.querySelectorAll('.fcard').forEach(c => c.classList.remove('highlighted'));
+    }
+
+    function renderReviews(filter) {
+      const grid = document.getElementById('reviewsGrid');
+      grid.innerHTML = '';
+      const filtered = filter === 'all' ? REVIEWS : REVIEWS.filter(r => r.type === filter);
+      filtered.forEach(r => {
+        const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+        const typeMap = { pos: 's-pos', neg: 's-neg', neu: 's-neu', req: 's-req' };
+        const typeLabel = { pos: 'positief', neg: 'negatief', neu: 'gemengd', req: 'feature verzoek' };
+        const tagsHtml = r.tags.map(t => `<span class="rtag">${t}</span>`).join('');
+        grid.innerHTML += `<div class="review-item"><div class="review-top"><div class="review-app"><span class="app-dot" style="background:${r.color};"></span>${r.app} · ${r.platform}</div><span class="review-stars">${stars}</span></div><div class="review-text">${r.text}</div><div class="review-tags">${tagsHtml}<span class="sentiment ${typeMap[r.type]}">${typeLabel[r.type]}</span></div></div>`;
+      });
+    }
+
+    function filterReviews(type, el) {
+      document.querySelectorAll('#view-reviews .fpill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      renderReviews(type);
+    }
+
+    function renderThemes() {
+      const el = document.getElementById('themesBars');
+      el.innerHTML = THEMES.map(t => `<div class="comp-bar-row" style="margin-bottom:10px;"><span class="comp-bar-label" style="width:130px;font-size:12px;">${t.label}</span><div class="comp-bar-track" style="flex:1;height:8px;"><div class="comp-bar-fill" style="width:${t.v}%;background:${t.c};"></div></div><span class="comp-bar-num" style="font-size:12px;">${t.v}%</span></div>`).join('');
+    }
+
+    function buildLFK() {
+      const ctx = document.getElementById('lfkChart').getContext('2d');
+      const bgPlugin = {
+        id: 'zoneBg',
+        beforeDraw(chart) {
+          const { ctx, chartArea: { left, right, top, bottom }, scales: { x, y } } = chart;
+          const midX = x.getPixelForValue(50), midY = y.getPixelForValue(50);
+          ctx.save();
+          [
+            { x1: left, x2: midX, y1: top, y2: midY, bg: 'rgba(254,249,195,0.55)', bd: '#fde047', label: 'Fillers' },
+            { x1: midX, x2: right, y1: top, y2: midY, bg: 'rgba(220,252,231,0.55)', bd: '#86efac', label: 'Leaders' },
+            { x1: left, x2: midX, y1: midY, y2: bottom, bg: 'rgba(254,226,226,0.55)', bd: '#fca5a5', label: 'Killers' },
+            { x1: midX, x2: right, y1: midY, y2: bottom, bg: 'rgba(219,234,254,0.55)', bd: '#93c5fd', label: 'Premium / add-ons' },
+          ].forEach(z => {
+            ctx.fillStyle = z.bg; ctx.fillRect(z.x1, z.y1, z.x2 - z.x1, z.y2 - z.y1);
+            ctx.strokeStyle = z.bd; ctx.lineWidth = 0.5; ctx.strokeRect(z.x1, z.y1, z.x2 - z.x1, z.y2 - z.y1);
+            ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.font = '500 11px sans-serif';
+            ctx.fillText(z.label, z.x1 + 8, z.y1 + 16);
+          });
+          ctx.restore();
         }
-      },
-      scales: {
-        x: { min:0, max:100, title:{display:true,text:'Ervaren waarde  →',font:{size:11},color:'#9ca3af'}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{color:'#9ca3af',font:{size:10},callback:v=>v===0?'Laag':v===100?'Hoog':''} },
-        y: { min:0, max:100, title:{display:true,text:'Verwachte adoptie  →',font:{size:11},color:'#9ca3af'}, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{color:'#9ca3af',font:{size:10},callback:v=>v===0?'Laag':v===100?'Hoog':''} }
-      },
-      onClick(e, els) {
-        if (!els.length) return;
-        const pt = chart.data.datasets[els[0].datasetIndex].data[els[0].index];
-        const f = FEATURES.find(f=>f.id===pt.id);
-        if (f) showDetail(f);
-      }
+      };
+      chart = new Chart(ctx, {
+        type: 'bubble',
+        plugins: [bgPlugin],
+        data: {
+          datasets: [
+            { label: 'FM features', data: FEATURES.filter(f => f.fm).map(f => ({ x: f.x, y: f.y, r: 13, id: f.id, name: f.name, zone: f.zone })), backgroundColor: '#1a6ef5', borderColor: '#fff', borderWidth: 1.5 },
+            { label: 'Gap / concurrent', data: FEATURES.filter(f => !f.fm).map(f => ({ x: f.x, y: f.y, r: 13, id: f.id, name: f.name, zone: f.zone })), backgroundColor: '#e5e7eb', borderColor: '#9ca3af', borderWidth: 1.5 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: 8 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: c => `#${c.raw.id} ${c.raw.name} [${ZONE_LABEL[c.raw.zone]}]` }
+            }
+          },
+          scales: {
+            x: { min: 0, max: 100, title: { display: true, text: 'Ervaren waarde  →', font: { size: 11 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => v === 0 ? 'Laag' : v === 100 ? 'Hoog' : '' } },
+            y: { min: 0, max: 100, title: { display: true, text: 'Verwachte adoptie  →', font: { size: 11 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => v === 0 ? 'Laag' : v === 100 ? 'Hoog' : '' } }
+          },
+          onClick(e, els) {
+            if (!els.length) return;
+            const pt = chart.data.datasets[els[0].datasetIndex].data[els[0].index];
+            const f = FEATURES.find(f => f.id === pt.id);
+            if (f) showDetail(f);
+          }
+        }
+      });
     }
-  });
-}
 
-/* ── SENTIMENT DATA: 36 monthly datapoints ── */
-function makeSentData(base, drift, noise, dip, dipIdx, dipLen) {
-  return Array.from({length:36}, (_,i) => {
-    let v = base + drift * i + (Math.sin(i * 0.7) * noise);
-    if (i >= dipIdx && i < dipIdx + dipLen) v -= dip * ((i - dipIdx + 1) / dipLen);
-    return Math.round(Math.min(98, Math.max(20, v)));
-  });
-}
+    /* ── SENTIMENT DATA: 36 monthly datapoints ── */
+    function makeSentData(base, drift, noise, dip, dipIdx, dipLen) {
+      return Array.from({ length: 36 }, (_, i) => {
+        let v = base + drift * i + (Math.sin(i * 0.7) * noise);
+        if (i >= dipIdx && i < dipIdx + dipLen) v -= dip * ((i - dipIdx + 1) / dipLen);
+        return Math.round(Math.min(98, Math.max(20, v)));
+      });
+    }
 
-const SENT_LABELS_36 = (() => {
-  const ms = ['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
-  return Array.from({length:36}, (_,i) => {
-    const yr = 2022 + Math.floor(i/12);
-    return ms[i % 12] + (i%12===0 ? ` '${String(yr).slice(2)}` : '');
-  });
-})();
+    const SENT_LABELS_36 = (() => {
+      const ms = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+      return Array.from({ length: 36 }, (_, i) => {
+        const yr = 2022 + Math.floor(i / 12);
+        return ms[i % 12] + (i % 12 === 0 ? ` '${String(yr).slice(2)}` : '');
+      });
+    })();
 
-const SENT_DATA = {
-  overall: {
-    fm:   makeSentData(72, 0.28, 3, 7, 18, 4),
-    waze: makeSentData(67, 0.15, 4, 4, 22, 3),
-    gm:   makeSentData(70, 0.22, 3, 5, 14, 5),
-  },
-  cost: {
-    fm:   makeSentData(58, -0.18, 4, 14, 20, 6),
-    waze: makeSentData(61,  0.10, 3,  5, 16, 4),
-    gm:   makeSentData(65,  0.12, 3,  6, 12, 5),
-  },
-  feature: {
-    fm:   makeSentData(78,  0.32, 2,  5, 17, 4),
-    waze: makeSentData(71,  0.18, 3,  6, 21, 4),
-    gm:   makeSentData(74,  0.25, 2,  7, 13, 5),
-  },
-};
+    const SENT_DATA = {
+      overall: {
+        fm: makeSentData(72, 0.28, 3, 7, 18, 4),
+        waze: makeSentData(67, 0.15, 4, 4, 22, 3),
+        gm: makeSentData(70, 0.22, 3, 5, 14, 5),
+      },
+      cost: {
+        fm: makeSentData(58, -0.18, 4, 14, 20, 6),
+        waze: makeSentData(61, 0.10, 3, 5, 16, 4),
+        gm: makeSentData(65, 0.12, 3, 6, 12, 5),
+      },
+      feature: {
+        fm: makeSentData(78, 0.32, 2, 5, 17, 4),
+        waze: makeSentData(71, 0.18, 3, 6, 21, 4),
+        gm: makeSentData(74, 0.25, 2, 7, 13, 5),
+      },
+    };
 
-const SENT_APPS = [
-  { key:'fm',   label:'Flitsmeister', color:'#1a6ef5', fill:'rgba(26,110,245,0.07)' },
-  { key:'waze', label:'Waze',         color:'#1a944a', fill:'rgba(26,148,74,0.06)' },
-  { key:'gm',   label:'Google Maps',  color:'#d85a30', fill:'rgba(216,90,48,0.06)' },
-];
+    const SENT_APPS = [
+      { key: 'fm', label: 'Flitsmeister', color: '#1a6ef5', fill: 'rgba(26,110,245,0.07)' },
+      { key: 'waze', label: 'Waze', color: '#1a944a', fill: 'rgba(26,148,74,0.06)' },
+      { key: 'gm', label: 'Google Maps', color: '#d85a30', fill: 'rgba(216,90,48,0.06)' },
+    ];
 
-let sentRange = 6;
-let sentAppVisible = { fm:true, waze:true, gm:true };
-let sentCharts = {};
-let sentBuilt = false;
+    let sentRange = 6;
+    let sentAppVisible = { fm: true, waze: true, gm: true };
+    let sentCharts = {};
+    let sentBuilt = false;
 
-function getLabels() { return SENT_LABELS_36.slice(36 - sentRange); }
-function getSlice(arr) { return arr.slice(36 - sentRange); }
+    function getLabels() { return SENT_LABELS_36.slice(36 - sentRange); }
+    function getSlice(arr) { return arr.slice(36 - sentRange); }
 
-function buildSentLegend(id) {
-  const el = document.getElementById('sent-legend-'+id);
-  if (!el) return;
-  el.innerHTML = SENT_APPS.map(a =>
-    `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);">
+    function buildSentLegend(id) {
+      const el = document.getElementById('sent-legend-' + id);
+      if (!el) return;
+      el.innerHTML = SENT_APPS.map(a =>
+        `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);">
       <span style="width:20px;height:2px;background:${a.color};display:inline-block;border-radius:1px;"></span>${a.label}
     </div>`
-  ).join('');
-}
+      ).join('');
+    }
 
-function makeDatasets(type) {
-  return SENT_APPS
-    .filter(a => sentAppVisible[a.key])
-    .map(a => ({
-      label: a.label,
-      data: getSlice(SENT_DATA[type][a.key]),
-      borderColor: a.color,
-      backgroundColor: a.fill,
-      tension: 0.4, fill: true, borderWidth: 2,
-      pointRadius: sentRange <= 12 ? 3 : 0,
-      pointHoverRadius: 5,
-      pointBackgroundColor: a.color,
-    }));
-}
+    function makeDatasets(type) {
+      return SENT_APPS
+        .filter(a => sentAppVisible[a.key])
+        .map(a => ({
+          label: a.label,
+          data: getSlice(SENT_DATA[type][a.key]),
+          borderColor: a.color,
+          backgroundColor: a.fill,
+          tension: 0.4, fill: true, borderWidth: 2,
+          pointRadius: sentRange <= 12 ? 3 : 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: a.color,
+        }));
+    }
 
-function chartOpts(yMin, yMax) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y}% positief` } }
-    },
-    scales: {
-      y: {
-        min: yMin, max: yMax,
-        ticks: { callback: v => v+'%', color:'#9ca3af', font:{size:10} },
-        grid: { color:'rgba(0,0,0,0.04)' }
-      },
-      x: {
-        ticks: {
-          color:'#9ca3af', font:{size:10},
-          maxTicksLimit: sentRange <= 12 ? 12 : sentRange <= 24 ? 12 : 18,
-          maxRotation: 0,
+    function chartOpts(yMin, yMax) {
+      return {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y}% positief` } }
         },
-        grid: { display: false }
+        scales: {
+          y: {
+            min: yMin, max: yMax,
+            ticks: { callback: v => v + '%', color: '#9ca3af', font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,0.04)' }
+          },
+          x: {
+            ticks: {
+              color: '#9ca3af', font: { size: 10 },
+              maxTicksLimit: sentRange <= 12 ? 12 : sentRange <= 24 ? 12 : 18,
+              maxRotation: 0,
+            },
+            grid: { display: false }
+          }
+        }
+      };
+    }
+
+    function buildSentiment() {
+      if (sentBuilt) { updateSentCharts(); return; }
+      sentBuilt = true;
+      ['overall', 'cost', 'feature'].forEach(type => {
+        buildSentLegend(type);
+      });
+      sentCharts.overall = new Chart(document.getElementById('sentChart-overall').getContext('2d'), {
+        type: 'line', data: { labels: getLabels(), datasets: makeDatasets('overall') }, options: chartOpts(50, 98)
+      });
+      sentCharts.cost = new Chart(document.getElementById('sentChart-cost').getContext('2d'), {
+        type: 'line', data: { labels: getLabels(), datasets: makeDatasets('cost') }, options: chartOpts(30, 90)
+      });
+      sentCharts.feature = new Chart(document.getElementById('sentChart-feature').getContext('2d'), {
+        type: 'line', data: { labels: getLabels(), datasets: makeDatasets('feature') }, options: chartOpts(50, 98)
+      });
+      renderThemes();
+    }
+
+    function updateSentCharts() {
+      if (!sentBuilt) return;
+      ['overall', 'cost', 'feature'].forEach(type => {
+        const ch = sentCharts[type];
+        if (!ch) return;
+        ch.data.labels = getLabels();
+        ch.data.datasets = makeDatasets(type);
+        const ptR = sentRange <= 12 ? 3 : 0;
+        ch.data.datasets.forEach(ds => { ds.pointRadius = ptR; });
+        ch.options.scales.x.ticks.maxTicksLimit = sentRange <= 12 ? 12 : sentRange <= 24 ? 12 : 18;
+        ch.update();
+      });
+    }
+
+    function setRange(months, el) {
+      document.querySelectorAll('#view-sentiment .filter-pills .fpill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      sentRange = months;
+      updateSentCharts();
+    }
+
+    function toggleSentApp(btn) {
+      const app = btn.dataset.app;
+      sentAppVisible[app] = !sentAppVisible[app];
+      btn.classList.toggle('on', sentAppVisible[app]);
+      updateSentCharts();
+    }
+
+    function switchView(view) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('view-' + view).classList.add('active');
+      document.querySelectorAll('.npill').forEach(p => p.classList.remove('active'));
+      const idx = { matrix: 0, reviews: 1, sentiment: 2 };
+      document.querySelectorAll('.npill')[idx[view]].classList.add('active');
+      if (view === 'sentiment') { buildSentiment(); }
+    }
+
+    function askQuestion(q) {
+      document.getElementById('askInput').value = q;
+      submitQuestion();
+    }
+
+    function submitQuestion() {
+      const q = document.getElementById('askInput').value.trim();
+      if (!q) return;
+      const btn = document.getElementById('askBtn');
+      btn.classList.add('loading');
+      btn.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+      const resp = document.getElementById('aiResponse');
+      const text = document.getElementById('aiResponseText');
+      resp.classList.remove('visible');
+      text.innerHTML = '';
+      const response = getAIResponse(q);
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="ti ti-send"></i> Analyseer';
+        text.innerHTML = response;
+        resp.classList.add('visible');
+        resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 1400);
+    }
+
+    document.getElementById('askInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitQuestion(); });
+
+    function toggleApp(el) {
+      el.classList.toggle('on');
+    }
+
+    function cyclePeriod(btn) {
+      const periods = ['3 maanden', '6 maanden', '12 maanden', 'Alle tijd'];
+      const lbl = document.getElementById('period-label');
+      const i = periods.indexOf(lbl.textContent);
+      lbl.textContent = periods[(i + 1) % periods.length];
+    }
+
+    function syncData(btn) {
+      const icon = document.getElementById('sync-icon');
+      icon.style.transform = 'rotate(360deg)';
+      icon.style.transition = 'transform 0.6s ease';
+      setTimeout(() => { icon.style.transform = ''; icon.style.transition = ''; }, 700);
+    }
+
+    function runDemo(type) {
+      if (type === 'killers') {
+        switchView('matrix');
+        document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+        const killerPill = [...document.querySelectorAll('#view-matrix .fpill')].find(p => p.textContent === 'Killers');
+        if (killerPill) { killerPill.classList.add('active'); renderGrid('killer'); }
+        setTimeout(() => {
+          const first = FEATURES.find(f => f.zone === 'killer');
+          if (first) showDetail(first);
+        }, 400);
+      } else if (type === 'ai') {
+        document.getElementById('aiCard').scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?'), 600);
+      } else if (type === 'full') {
+        switchView('matrix');
+        renderGrid('all');
+        setTimeout(() => {
+          showDetail(FEATURES.find(f => f.id === 17));
+        }, 500);
+        setTimeout(() => {
+          switchView('reviews');
+        }, 2500);
+        setTimeout(() => {
+          switchView('sentiment');
+          renderThemes();
+        }, 4500);
+        setTimeout(() => {
+          switchView('matrix');
+          document.getElementById('aiCard').scrollIntoView({ behavior: 'smooth' });
+          askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?');
+        }, 6500);
       }
     }
-  };
-}
 
-function buildSentiment() {
-  if (sentBuilt) { updateSentCharts(); return; }
-  sentBuilt = true;
-  ['overall','cost','feature'].forEach(type => {
-    buildSentLegend(type);
-  });
-  sentCharts.overall = new Chart(document.getElementById('sentChart-overall').getContext('2d'), {
-    type:'line', data:{labels:getLabels(),datasets:makeDatasets('overall')}, options:chartOpts(50,98)
-  });
-  sentCharts.cost = new Chart(document.getElementById('sentChart-cost').getContext('2d'), {
-    type:'line', data:{labels:getLabels(),datasets:makeDatasets('cost')}, options:chartOpts(30,90)
-  });
-  sentCharts.feature = new Chart(document.getElementById('sentChart-feature').getContext('2d'), {
-    type:'line', data:{labels:getLabels(),datasets:makeDatasets('feature')}, options:chartOpts(50,98)
-  });
-  renderThemes();
-}
-
-function updateSentCharts() {
-  if (!sentBuilt) return;
-  ['overall','cost','feature'].forEach(type => {
-    const ch = sentCharts[type];
-    if (!ch) return;
-    ch.data.labels = getLabels();
-    ch.data.datasets = makeDatasets(type);
-    const ptR = sentRange <= 12 ? 3 : 0;
-    ch.data.datasets.forEach(ds => { ds.pointRadius = ptR; });
-    ch.options.scales.x.ticks.maxTicksLimit = sentRange <= 12 ? 12 : sentRange <= 24 ? 12 : 18;
-    ch.update();
-  });
-}
-
-function setRange(months, el) {
-  document.querySelectorAll('#view-sentiment .filter-pills .fpill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  sentRange = months;
-  updateSentCharts();
-}
-
-function toggleSentApp(btn) {
-  const app = btn.dataset.app;
-  sentAppVisible[app] = !sentAppVisible[app];
-  btn.classList.toggle('on', sentAppVisible[app]);
-  updateSentCharts();
-}
-
-function switchView(view) {
-  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('view-'+view).classList.add('active');
-  document.querySelectorAll('.npill').forEach(p => p.classList.remove('active'));
-  const idx = { matrix:0, reviews:1, sentiment:2 };
-  document.querySelectorAll('.npill')[idx[view]].classList.add('active');
-  if (view === 'sentiment') { buildSentiment(); }
-}
-
-function askQuestion(q) {
-  document.getElementById('askInput').value = q;
-  submitQuestion();
-}
-
-function submitQuestion() {
-  const q = document.getElementById('askInput').value.trim();
-  if (!q) return;
-  const btn = document.getElementById('askBtn');
-  btn.classList.add('loading');
-  btn.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
-  const resp = document.getElementById('aiResponse');
-  const text = document.getElementById('aiResponseText');
-  resp.classList.remove('visible');
-  text.innerHTML = '';
-  const response = getAIResponse(q);
-  setTimeout(() => {
-    btn.classList.remove('loading');
-    btn.innerHTML = '<i class="ti ti-send"></i> Analyseer';
-    text.innerHTML = response;
-    resp.classList.add('visible');
-    resp.scrollIntoView({ behavior:'smooth', block:'nearest' });
-  }, 1400);
-}
-
-document.getElementById('askInput').addEventListener('keydown', e => { if (e.key==='Enter') submitQuestion(); });
-
-function toggleApp(el) {
-  el.classList.toggle('on');
-}
-
-function cyclePeriod(btn) {
-  const periods = ['3 maanden','6 maanden','12 maanden','Alle tijd'];
-  const lbl = document.getElementById('period-label');
-  const i = periods.indexOf(lbl.textContent);
-  lbl.textContent = periods[(i+1) % periods.length];
-}
-
-function syncData(btn) {
-  const icon = document.getElementById('sync-icon');
-  icon.style.transform = 'rotate(360deg)';
-  icon.style.transition = 'transform 0.6s ease';
-  setTimeout(() => { icon.style.transform = ''; icon.style.transition = ''; }, 700);
-}
-
-function runDemo(type) {
-  if (type === 'killers') {
-    switchView('matrix');
-    document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
-    const killerPill = [...document.querySelectorAll('#view-matrix .fpill')].find(p=>p.textContent==='Killers');
-    if (killerPill) { killerPill.classList.add('active'); renderGrid('killer'); }
-    setTimeout(() => {
-      const first = FEATURES.find(f=>f.zone==='killer');
-      if (first) showDetail(first);
-    }, 400);
-  } else if (type === 'ai') {
-    document.getElementById('aiCard').scrollIntoView({ behavior:'smooth' });
-    setTimeout(() => askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?'), 600);
-  } else if (type === 'full') {
-    switchView('matrix');
     renderGrid('all');
-    setTimeout(() => {
-      showDetail(FEATURES.find(f=>f.id===17));
-    }, 500);
-    setTimeout(() => {
-      switchView('reviews');
-    }, 2500);
-    setTimeout(() => {
-      switchView('sentiment');
-      renderThemes();
-    }, 4500);
-    setTimeout(() => {
-      switchView('matrix');
-      document.getElementById('aiCard').scrollIntoView({ behavior:'smooth' });
-      askQuestion('Welke killer-features moet Flitsmeister prioriteren op basis van review sentiment?');
-    }, 6500);
-  }
-}
-
-renderGrid('all');
-renderReviews('all');
-renderSidebar();
-buildLFK();
-</script>
+    renderReviews('all');
+    renderSidebar();
+    buildLFK();
+  </script>
 </body>
+
 </html>
